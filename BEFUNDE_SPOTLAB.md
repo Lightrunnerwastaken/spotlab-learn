@@ -34,9 +34,18 @@ ausgeben. **Der Kurs macht das seit Kapitel 6 selbst** (`motor/kursmotor.py`, Fe
 Im Raum «Möbliert» liefert `spot.tags()` vom Startplatz aus in **keiner** von
 acht Blickrichtungen (alle 45°) einen Tag. Geklärt beim Bau von Kapitel 6: Im
 Raum «Durchgang» sieht Spot Tag 3 erst ab rund 2.9 m Abstand. Die Tags in
-«Möbliert» hängen vom Start aus 3.6 m und weiter weg — zu weit. Für Kapitel 7
-braucht es einen Raum (oder Startplatz), in dem ein Tag näher als 3 m hängt.
-Ob 3 m der Reichweite des echten Spots entspricht, ist nicht geprüft.
+«Möbliert» hängen vom Start aus 3.6 m und weiter weg — zu weit. Die Reichweite ist
+`TAG_REICHWEITE_M = 3.0` in `welt/wahrnehmung.py`, laut Kommentar dort **geschätzt,
+nicht gemessen** (Abnahmepunkt A22). Kapitel 7 löst es mit eigenen Startplätzen
+(Raummitte 3.5, 2.7: beide Tags in Sicht) und macht die Grenze zum Lernstoff
+(«aus der Ecke sieht Spot keinen Tag, Drehen hilft nicht»). Vorschlag: der
+Vorgabestart von «Möbliert» näher an einen Tag, damit `tags()` beim ersten Versuch
+etwas liefert; und A22 messen, damit der Kurs eine echte Zahl nennen kann.
+
+Dazu, nicht falsch, aber nirgends gesagt: Der Sim sieht Tags **rundum** (kein
+Blickkegel, fünf Kameras). Wer vom Handy her denkt, sucht durch Drehen — im Sim
+ändert Drehen nichts. Ob der echte Spot nach hinten genauso weit sieht wie nach
+vorne, ist nicht geprüft.
 
 ## 3b. Das Hindernisgitter reicht nur 1.9 m weit
 

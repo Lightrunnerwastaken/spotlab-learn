@@ -64,6 +64,33 @@ BEHAUPTUNGEN = [
     ("06", "Kistenecke: mit margin 0.35 ist vorne zu", "durchgang", "1.68,2.63,-15",
      KOPF + "    print('M35', spot.look(max_distance=1.2, start=0.6, margin=0.35).front.status)\n",
      "fertig", "M35 blocked", False),
+    ("07", "Quiz: in der Mitte ist Tag 2 der nächste", "moebliert", "3.5,2.7,0",
+     KOPF + "    print('IDS', [t.id for t in spot.tags()])\n",
+     "fertig", "IDS [2, 1]", False),
+    ("07", "Nach Drehen um die Peilung liegt der Tag vorne", "moebliert", "3.5,2.7,0",
+     KOPF + "    spot.move(turn=spot.tags(id=1)[0].bearing)\n"
+     "    print('VORNE', abs(spot.tags(id=1)[0].bearing) < 2)\n",
+     "fertig", "VORNE True", False),
+    ("07", "Aus Peilung und Abstand: Tag 1 bei (5.9, 2)", "moebliert", "3.5,2.7,0",
+     "import math\n" + KOPF + "    z = spot.state; t = spot.tags(id=1)[0]\n"
+     "    r = math.radians(z.heading + t.bearing)\n"
+     "    print('ORT', round(z.x + t.distance * math.cos(r), 1), round(z.y + t.distance * math.sin(r), 1))\n",
+     "fertig", "ORT 5.9 2.0", False),
+    ("07", "Direkt hingehen: Spot stösst an die WAND (nicht an den Tisch)", "moebliert", "3.5,2.7,0",
+     KOPF + "    t = spot.tags(id=1)[0]; spot.move(turn=t.bearing)\n"
+     "    try:\n        spot.move(forward=t.distance)\n    except Exception:\n        pass\n"
+     "    print('WAND', spot.state.x > 5.4)\n",
+     "fertig", "WAND True", True),
+    ("07", "Aus der Ecke sieht Spot in keiner Richtung einen Tag", "moebliert", "1,1,0",
+     KOPF + "    n = 0\n    for i in range(8):\n        n += len(spot.tags()); spot.move(turn=45)\n"
+     "    print('KEINE', n == 0)\n",
+     "fertig", "KEINE True", False),
+    ("07", "Quiz: ein Hindernis nimmt die Sicht auf einen nahen Tag", "moebliert", "0.5,2.6,0",
+     KOPF + "    print('VERDECKT', spot.tags(id=2) == [])\n",
+     "fertig", "VERDECKT True", False),
+    ("07", "Quiz: am Hindernis vorbei ist die Sicht frei", "moebliert", "2.3,2.6,0",
+     KOPF + "    print('FREI', [t.id for t in spot.tags(id=2)])\n",
+     "fertig", "FREI [2]", False),
 ]
 
 
