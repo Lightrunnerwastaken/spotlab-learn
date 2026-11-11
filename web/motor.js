@@ -47,11 +47,23 @@ import spotlab.backends.sim  # einmal vorab, damit der erste Lauf nicht wartet
   return py;
 }
 
+// Pillow (PNG schreiben) nur, wenn es gebraucht wird: spotlab braucht es für
+// camera() (Kamera-Szenen), Schülercode vielleicht für eigene Bilder.
+let pillow = null;
+async function pakete(py, auftrag) {
+  if (!pillow && ((auftrag.raum || "").startsWith("kamera-") || /\bPIL\b/.test(auftrag.code || ""))) {
+    melde("Pillow (Bilder) wird geladen …");
+    pillow = py.loadPackage(["pillow"]);
+  }
+  if (pillow) await pillow;
+}
+
 self.onmessage = async (ev) => {
   const { id, auftrag } = ev.data;
   try {
     if (!bereit) bereit = laden();
-    await bereit;
+    const py = await bereit;
+    await pakete(py, auftrag);
     const ergebnis = JSON.parse(laufeJson(JSON.stringify(auftrag)));
     postMessage({ art: "ergebnis", id, ergebnis });
   } catch (e) {

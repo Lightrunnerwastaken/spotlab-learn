@@ -30,6 +30,7 @@ Innerhalb eines Abschnitts gibt es vier Arten von Blöcken:
     ziel: licht blue green         (genau diese Farben nacheinander, raum=trocken)
     ziel: toene C5 E5 G5           (genau diese Töne nacheinander)
     ziel: haltung pitch 15         (ein pose() mit diesem Wert, ± 0.5)
+    ziel: zurueck 0.3              (endet so nah am EIGENEN Startplatz, geht mit starts=)
     tipp: ein Tipp, der nach dem ersten Fehlversuch erscheint
     ---
     ...Startcode...
@@ -56,6 +57,7 @@ ZIELARTEN = {
     "licht": "liste",     # Farben in dieser Reihenfolge: licht blue green
     "toene": "liste",     # Töne in dieser Reihenfolge: toene C5 E5 G5
     "haltung": 2,         # irgendein pose() mit diesem Wert: haltung pitch 15
+    "zurueck": 1,         # endet höchstens so weit (m) vom eigenen Startplatz
 }
 
 

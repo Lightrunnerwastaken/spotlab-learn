@@ -214,6 +214,108 @@ def installieren():
     sampler.StateSampler.stop = stop
     kursraeume_einhaengen()
     trockenlauf_wie_am_geraet()
+    kamera_einhaengen()
+
+
+# ================================================================ Kamera-Szenen
+#
+# raum=kamera-<name>: Spot steht im 2D-Übungsraum (Lage, look, tags wie immer), und
+# die Kameras liefern Antworten, die tools/aufnahmen_bauen.py vorher im 3D-Übungsraum
+# von spotlab (MuJoCo) an GENAU dieser Stelle aufgenommen hat: echte ImageResponse-
+# Protobufs mit Bild, Tiefe, Kalibrierung und Rahmenbaum. spotlabs Auswertung
+# (perception.Image, DepthImage, point_cloud) läuft unverändert darauf. Weil die
+# Bilder zu einer festen Stelle gehören, darf Spot in einer Szene nicht gehen.
+
+KURSAUFNAHMEN = Path(__file__).resolve().parent / "kursaufnahmen"
+AUFNAHME = None            # {quelle: protobuf-bytes} während eines Szenenlaufs
+
+
+def szenen() -> dict:
+    pfad = KURSAUFNAHMEN / "szenen.json"
+    return json.loads(pfad.read_text(encoding="utf-8")) if pfad.exists() else {}
+
+
+def szene_lesen(name: str) -> dict:
+    import gzip
+    import struct
+
+    daten, i, aus = gzip.decompress((KURSAUFNAHMEN / f"{name}.bin.gz").read_bytes()), 0, {}
+    while i < len(daten):
+        (n,) = struct.unpack_from("<I", daten, i); i += 4
+        quelle = daten[i:i + n].decode("utf-8"); i += n
+        (m,) = struct.unpack_from("<I", daten, i); i += 4
+        aus[quelle] = daten[i:i + m]; i += m
+    return aus
+
+
+def kamera_einhaengen():
+    from spotlab.api import motion
+    from spotlab.backends import sim
+    from spotlab.backends.base import Capability
+    from spotlab.errors import SpotlabError
+
+    if getattr(sim.SimBackend.images, "_kurs", False):
+        return
+    cls = sim.SimBackend
+    faehig_vorher, quellen_vorher, bilder_vorher = cls.capabilities, cls.image_sources, cls.images
+
+    def capabilities(self):
+        koennen = faehig_vorher(self)
+        if AUFNAHME:
+            koennen |= Capability.DEPTH_CAMERAS | Capability.GRAY_CAMERAS
+        return koennen
+
+    def image_sources(self):
+        return list(AUFNAHME) if AUFNAHME else quellen_vorher(self)
+
+    def images(self, sources):
+        if not AUFNAHME:
+            return bilder_vorher(self, sources)
+        from bosdyn.api import image_pb2
+
+        antworten = []
+        for quelle in sources:
+            if quelle not in AUFNAHME:
+                raise SpotlabError(f"Unbekannte Bildquelle '{quelle}'. Vorhanden: {', '.join(AUFNAHME)}")
+            antwort = image_pb2.ImageResponse()
+            antwort.ParseFromString(AUFNAHME[quelle])
+            antworten.append(antwort)
+        return antworten
+
+    images._kurs = True
+    cls.capabilities, cls.image_sources, cls.images = capabilities, image_sources, images
+
+    def gesperrt(vorher):
+        def befehl(*args, **kwargs):
+            if AUFNAHME:
+                raise SpotlabError(
+                    "In diesem Kapitel steht Spot still: Die Kamerabilder sind vorher im "
+                    "3D-Übungsraum an genau dieser Stelle aufgenommen worden und würden "
+                    "nach einem Schritt nicht mehr stimmen.")
+            return vorher(*args, **kwargs)
+        return befehl
+
+    motion.move, motion.walk = gesperrt(motion.move), gesperrt(motion.walk)
+
+
+def _bilder(ordner: Path, hoechstens: int = 8, max_bytes: int = 2_000_000) -> list:
+    """PNG/JPG, die das Programm selbst gespeichert hat (nicht die Aufzeichnung unter runs/)."""
+    import base64
+
+    liste = []
+    for pfad in sorted(ordner.rglob("*")):
+        if "runs" in pfad.relative_to(ordner).parts or pfad.suffix.lower() not in (".png", ".jpg", ".jpeg"):
+            continue
+        if len(liste) >= hoechstens:
+            break
+        daten = pfad.read_bytes()
+        if len(daten) > max_bytes:
+            liste.append({"name": pfad.name, "fehler": "zu gross zum Anzeigen"})
+            continue
+        art = "png" if pfad.suffix.lower() == ".png" else "jpeg"
+        liste.append({"name": str(pfad.relative_to(ordner).as_posix()),
+                      "daten": f"data:image/{art};base64," + base64.b64encode(daten).decode("ascii")})
+    return liste
 
 
 # Am echten Spot WARTEN lights() und beep() die Dauer ab (api/signals.py::_run,
@@ -282,6 +384,12 @@ def lauf(code: str, raum: str = "leer", start: str = "", grenze_s: float = GRENZ
     # raum=trocken: der Trockenlauf von spotlab (echte Protobufs, nichts bewegt sich).
     # Er kann, was der 2D-Sim nicht kann: lights, beep, pose. Die Seite zeigt dann
     # statt der Karte eine Spot-Zeichnung, die die Signale abspielt.
+    global AUFNAHME
+    AUFNAHME = None
+    if raum and raum.startswith("kamera-"):
+        szene = szenen()[raum]
+        AUFNAHME = szene_lesen(raum)
+        raum, start = szene["raum"], szene["start"]
     os.environ["SPOTLAB_BACKEND"] = "dryrun" if raum == "trocken" else "sim"
     if raum and raum not in ("keiner", "trocken"):
         os.environ["SPOTLAB_RAUM"] = raum
@@ -314,6 +422,7 @@ def lauf(code: str, raum: str = "leer", start: str = "", grenze_s: float = GRENZ
                 traceback.print_exc()
     finally:
         UHR.grenze = None
+        AUFNAHME = None
         _ABTASTER.clear()
         os.chdir(vorher_ordner)
         sys.argv = vorher_argv
@@ -339,6 +448,7 @@ def lauf(code: str, raum: str = "leer", start: str = "", grenze_s: float = GRENZ
         "angestossen": [[d.get("x"), d.get("y")] for d in angestossen],
         "kommandos": [e.get("daten", {}).get("name") for e in ereignisse if e.get("art") == "kommando"],
         "signale": _signale(ereignisse),
+        "bilder": _bilder(ordner),
         "dauer": round(UHR.v - beginn, 1),
     }
 
@@ -498,6 +608,15 @@ def pruefen(ziele: list, e: dict) -> list:
             strecke = sum(math.hypot(b[1] - a[1], b[2] - a[2]) for a, b in zip(weg, weg[1:]))
             text = f"Spot legt mindestens {w[0]:g} m zurück"
             ok, detail = strecke >= w[0], f"Er ist {strecke:.2f} m gegangen."
+        elif art == "zurueck":
+            text = f"Spot endet wieder an seinem Startplatz (± {w[0]:g} m)"
+            if lage is None or len(weg) < 2:
+                ok, detail = False, "Spot hat sich nicht bewegt."
+            else:
+                d = math.hypot(lage[1] - weg[0][1], lage[2] - weg[0][2])
+                ok = d <= w[0] and any(math.hypot(p[1] - weg[0][1], p[2] - weg[0][2]) > 1.0 for p in weg)
+                detail = (f"Er endet {d:.2f} m vom Start entfernt." if d > w[0]
+                          else "" if ok else "Er war nie weiter als 1 m vom Start weg.")
         elif art == "licht":
             folge = [farbname(s.get("color")) for s in e.get("signale", []) if s["art"] == "lights"]
             text = "Spot leuchtet nacheinander: " + ", ".join(FARBEN_DEUTSCH.get(f, f) for f in w)
@@ -535,15 +654,19 @@ def pruefen(ziele: list, e: dict) -> list:
 # ================================================================ Räume
 
 def raum_als_json(name: str) -> dict:
+    """Grundriss für die Karte. Eine Kamera-Szene zeigt ihren Raum mit Spot an der Aufnahmestelle."""
     kursraeume_einhaengen()
     from spotlab.welt.raum import raum_laden
 
-    r = raum_laden(name)
+    szene = szenen().get(name)
+    r = raum_laden(szene["raum"] if szene else name)
+    start = [float(v) for v in szene["start"].split(",")] if szene else list(r.start)
     return {
         "name": r.name,
-        "beschreibung": r.beschreibung,
+        "beschreibung": szene["titel"] if szene else r.beschreibung,
+        "szene": bool(szene),
         "groesse": list(r.groesse) if r.groesse else None,
-        "start": list(r.start),
+        "start": start,
         "waende": [[w.x1, w.y1, w.x2, w.y2] for w in r.waende],
         "bloecke": [{"name": b.name, "ecken": [list(p) for p in b.ecken()]} for b in r.bloecke],
         "boeden": [{"name": b.name, "art": b.art, "ecken": [list(p) for p in b.ecken()]} for b in r.boeden],

@@ -82,6 +82,11 @@ def python_bauen() -> tuple[int, str]:
         z.write(WURZEL / "motor" / "kursmotor.py", "kursmotor.py")
         for raum in sorted((WURZEL / "motor" / "kursraeume").glob("*.toml")):
             z.write(raum, f"kursraeume/{raum.name}")
+        # Kamera-Szenen aus dem 3D-Übungsraum (tools/aufnahmen_bauen.py), schon gzip
+        for datei in sorted((WURZEL / "motor" / "kursaufnahmen").glob("*")):
+            if datei.suffix in (".gz", ".json"):
+                z.write(datei, f"kursaufnahmen/{datei.name}", compress_type=zipfile.ZIP_STORED
+                        if datei.suffix == ".gz" else zipfile.ZIP_DEFLATED)
         z.writestr("spotlab_stand.txt", f"spotlab {spotlab.__version__} ({stand})\n")
     return anzahl, f"spotlab {spotlab.__version__} ({stand}), {zip_pfad.stat().st_size / 1e6:.2f} MB"
 

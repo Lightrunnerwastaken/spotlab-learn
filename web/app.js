@@ -558,7 +558,21 @@ function codeAusfuehrbar({ schluessel, code, raum, start, starts = null, ziele =
   });
   const konsole = el("div", { class: "konsole", html: '<span class="prompt">&gt;&gt;&gt;</span>' });
   const fehlerhilfe = el("div", { class: "fehlerhilfe", style: "display:none" });
-  const ergebnis = el("div", { class: "ergebnis" }, el("div", {}, konsole, fehlerhilfe));
+  const bildleiste = el("div", { class: "bildleiste", style: "display:none" });
+  const ergebnis = el("div", { class: "ergebnis" }, el("div", {}, konsole, fehlerhilfe, bildleiste));
+
+  // Bilder, die das Programm selbst gespeichert hat (z. B. bild.save("vorne.png"))
+  function bilderZeigen(laeufe) {
+    bildleiste.innerHTML = "";
+    const alle = laeufe.flatMap((l) => l.bilder || []);
+    bildleiste.style.display = alle.length ? "" : "none";
+    for (const b of alle) {
+      const fig = el("figure", {});
+      if (b.daten) fig.append(el("img", { src: b.daten, alt: b.name }));
+      fig.append(el("figcaption", {}, b.name + (b.fehler ? ` (${b.fehler})` : "")));
+      bildleiste.append(fig);
+    }
+  }
   const info = el("span", { class: "info" });
 
   let karte = null;
@@ -643,6 +657,7 @@ function codeAusfuehrbar({ schluessel, code, raum, start, starts = null, ziele =
     if (karte) karte.zuruecksetzen(startposen);
     if (buehne) { buehne.zuruecksetzen(); TON.vorbereiten(); }   // Ton nur nach einem Klick erlaubt
     fehlerhilfe.style.display = "none";
+    bilderZeigen([]);
     laeuft(true);
 
     let abgebrochen = false, wiedergabeEnde = null;
@@ -670,6 +685,7 @@ function codeAusfuehrbar({ schluessel, code, raum, start, starts = null, ziele =
       return;
     }
     abmelden();
+    bilderZeigen(laeufe);
 
     const status = laeufe.some((l) => l.status === "abgebrochen") ? "abgebrochen"
       : laeufe.some((l) => l.status === "fehler") ? "fehler" : "fertig";
@@ -749,6 +765,7 @@ function codeAusfuehrbar({ schluessel, code, raum, start, starts = null, ziele =
   }, true);
 
   if (raum === "trocken") info.textContent = "Trockenlauf · Spot als Zeichnung";
+  else if (raum && raum.startsWith("kamera-")) info.textContent = "Kamera-Szene · aufgenommen im 3D-Übungsraum";
   else if (raum) info.textContent = "Simulator · Raum «" + raum + "»";
   return el("div", { class: "codefeld" }, editor.huelle, el("div", { class: "knoepfe" }, info, knopfStart, knopfReset, knopfLaden), ergebnis);
 }

@@ -216,6 +216,13 @@ a.kapitel:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0
 .karte { display: flex; flex-direction: column; }
 .karte.breit { border-left: 1px solid #dadcde; border-top: 0; }
 .karte svg { flex: 1; min-height: 0; }
+.bildleiste {
+  display: flex; flex-wrap: wrap; gap: 8px; padding: 8px; background: #f6f7f7;
+  border: 1px solid #dadcde; border-top: 0;
+}
+.bildleiste figure { margin: 0; flex: 0 1 320px; max-width: 100%; }
+.bildleiste img { display: block; width: 100%; height: auto; image-rendering: auto; border: 1px solid #dadcde; background: #000; }
+.bildleiste figcaption { font: 12px var(--mono); color: var(--text-leise); padding-top: 2px; }
 .buehne svg { background: #fbfbfa; }
 .buehnenfuss { display: flex; align-items: stretch; border-top: 1px solid #dadcde; background: #eef0f0; }
 .buehnenfuss .legende { flex: 1; border-top: 0; }

@@ -4,9 +4,18 @@
 Repository: github.com/Lightrunnerwastaken/spotlab-learn (öffentlich).
 
 Fertig:
-- Kapitel 1–9 geschrieben (Einführung, Hallo Spot, Bewegen, Zustand, Umgebung,
-  Hindernissen ausweichen, Objekte finden, Projekt: Unbekannter Raum, Licht/Ton/Haltung).
-  Kapitel 10–14 als Vorschau (`bald: ja`).
+- Kapitel 1–11 geschrieben (… Licht/Ton/Haltung, Kameras und Tiefe, Karten und
+  Navigation). Kapitel 12–14 als Vorschau (`bald: ja`).
+- Kapitel 10 (11.11. abends): `raum=kamera-<szene>` = Spot steht im 2D-Raum, die Kameras
+  liefern ImageResponse-Protobufs, die `tools/aufnahmen_bauen.py` vorher im 3D-Übungsraum
+  (MuJoCo) aufgenommen hat (`motor/kursaufnahmen/*.bin.gz`, je 0.2 MB, im Zip). spotlabs
+  Auswertung läuft unverändert darauf; Gehen ist in Szenen gesperrt. Bilder, die ein
+  Programm als PNG/JPG speichert, zeigt die Seite unter der Ausgabe (`bilder`). Pillow
+  lädt der Worker nur bei Bedarf. Neue Szene: Eintrag in SZENEN, Werkzeug laufen lassen.
+- Kapitel 11: eigene Karte aus `blick.grid` beim Erkunden (Wohnung, 50 Schritte, alle
+  Wände/Türen/Möbel), Wegpunktkette und Rückweg (Aufgabe, Ziel `zurueck`, drei Starts,
+  im Browser 19 s), GraphNav am echten Spot als Lesecode (load_map, localize,
+  navigate_to, Schleifenschluss).
 - Kapitel 9 (11.11. abends): `raum=trocken` = spotlabs Trockenlauf; die Seite zeigt statt
   der Karte eine Bühne (Spot von der Seite/vorne/oben, LEDs, Töne per WebAudio, Ton-Knopf).
   Kursmotor liefert `signale` (Zeitstrahl), lights/beep warten wie am Gerät, pose 1 s
@@ -28,11 +37,11 @@ Fertig:
   Thread, Attrappen für grpc/jwt/cryptography/urllib3/requests/keyring/pynmea2.
   Gegen den alten Echtzeit-Server verglichen: gleiche Wege, gleiche Zeiten.
 - Aufgaben mit mehreren Startplätzen (`starts=`), Ziel `ende_in`, Hinweis beim Anstossen.
-- `tests/kurs_pruefen.py` nimmt denselben Motor: 81 von 81 in Ordnung (19 s).
+- `tests/kurs_pruefen.py` nimmt denselben Motor: 100 von 100 in Ordnung (12 s).
 - Im Browser geprüft: Beispiel aus Kapitel 3, Türaufgabe aus Kapitel 6 (vier Starts,
   alle Ziele erfüllt). Erster Start lädt Python etwa 20 s, danach Sekunden.
 
 Offen:
-- Kapitel 10–11 (Kameras, Karten) brauchen Fähigkeiten, die weder der 2D-Sim noch der
-  Trockenlauf echt liefern (Befund 4); MuJoCo läuft im Browser nicht. Weg noch offen.
+- Kapitel 12–14 (Folgen, Treppen, echter Spot). GraphNav selbst ist im Kurs nicht
+  ausführbar (nur am Gerät); Kamerabilder sind gerendert, nicht vom Gerät.
 - Der Autor hat den Kurs noch nicht selbst durchgespielt.

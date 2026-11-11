@@ -1,0 +1,12 @@
+{
+  "kamera-tisch": {
+    "raum": "moebliert",
+    "start": "1.2,1.8,0",
+    "titel": "Spot steht im Raum «Möbliert» vor dem Tisch"
+  },
+  "kamera-tuer": {
+    "raum": "durchgang",
+    "start": "3.4,2.0,0",
+    "titel": "Spot steht im Raum «Durchgang» vor der Tür"
+  }
+}

@@ -146,6 +146,42 @@ BEHAUPTUNGEN = [
     ("09", "Das universelle Programm (Aufgabe 2) läuft auch im Trockenlauf durch", "trocken", "",
      (WURZEL / "tests" / "loesungen" / "09-licht-ton-haltung-3-9.py").read_text(encoding="utf-8"),
      "fertig", "Begrüssung fertig", False),
+    ("10", "Quiz: ohne Bodenfilter ist der Boden das nächste Hindernis (~0.6 m)", "kamera-tisch", "",
+     "import numpy as np\nfrom spotlab import connect\nwith connect() as spot:\n"
+     "    p = np.vstack([spot.point_cloud(n, frame='body').points for n in ('frontleft', 'frontright')])\n"
+     "    g = p[np.abs(p[:, 1]) < 0.35]\n    print('BODEN', 0.5 < g[:, 0].min() < 0.7)\n",
+     "fertig", "BODEN True", False),
+    ("10", "frontleft schaut nach links, frontright nach rechts", "kamera-tisch", "",
+     "from spotlab import connect\nwith connect() as spot:\n"
+     "    l = spot.point_cloud('frontleft', frame='body').points[:, 1].mean()\n"
+     "    r = spot.point_cloud('frontright', frame='body').points[:, 1].mean()\n"
+     "    print('SEITEN', l > 0.2 and r < -0.2)\n",
+     "fertig", "SEITEN True", False),
+    ("10", "Tür: ein Teil des Tiefenbilds hat keine Messung, im Gang kein Punkt", "kamera-tuer", "",
+     "import numpy as np\nfrom spotlab import connect\nwith connect() as spot:\n"
+     "    t = spot.depth('frontleft')\n"
+     "    p = np.vstack([spot.point_cloud(n, frame='body').points for n in ('frontleft', 'frontright')])\n"
+     "    p = p[p[:, 2] > -0.4]; g = p[np.abs(p[:, 1]) < 0.35]\n"
+     "    print('TUER', 0.01 < 1 - t.valid.mean() < 0.3, len(g) == 0, t.meters.shape)\n",
+     "fertig", "TUER True True (240, 424)", False),
+    ("10", "In einer Kamera-Szene verweigert spotlab das Gehen", "kamera-tisch", "",
+     KOPF + "    spot.move(forward=0.5)\n", "fehler", "In diesem Kapitel steht Spot still", False),
+    ("11", "Quiz: die gerade Linie vom Fundort zurück zum Start stösst an", "wohnung", "1,1,90",
+     ERKUNDEN.replace("SCHRITTE", "80").replace(
+         "STOPP", "        if spot.tags(id=5):\n            break\n")
+     + "    import math\n    z = spot.state\n    dx, dy = 1 - z.x, 1 - z.y\n"
+     "    spot.move(turn=(math.degrees(math.atan2(dy, dx)) - z.heading + 180) % 360 - 180)\n"
+     "    spot.move(forward=math.hypot(dx, dy))\n",
+     "*", "", True),
+    ("11", "Eigene Karte nach 50 Schritten: Kiste, Schrank, beide Türen", "wohnung", "1,1,90",
+     # das Beispiel aus dem Kurstext selbst, mit einer Prüfzeile am Ende
+     [b for b in [k for k in kursparser.kurs_lesen()["kapitel"] if k["nummer"] == 11][0]
+      ["abschnitte"][0]["bloecke"] if b["art"] == "code"][0]["code"]
+     + "print('KARTE', karte.get((21, 3)), karte.get((3, 9)), karte.get((12, 14)), karte.get((24, 10)))\n",
+     "fertig", "KARTE # # . .", False),
+    ("11", "Im Übungsraum gibt es kein GraphNav", "leer", "",
+     "from spotlab import connect\nwith connect() as spot:\n    print('NAV', spot.supports('navigate_to'))\n",
+     "fertig", "NAV False", False),
 ] + [
     ("08", f"Aufgabe: von {s} aus ist Tag 5 nicht sofort zu sehen", "wohnung", s,
      KOPF + "    print('ANFANG', len(spot.tags(id=5)))\n",

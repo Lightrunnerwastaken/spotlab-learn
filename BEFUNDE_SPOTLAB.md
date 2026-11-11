@@ -103,6 +103,20 @@ H, `beep("H")` gibt einen ValueError), und `pose()` beschreibt die ganze Haltung
 nicht eine Änderung — beides ist richtig, aber eine Falle für deutschsprachige
 Anfänger, die der Kurs ausdrücklich erklärt.
 
+## 4d. Die Frontkameras im 3D-Übungsraum sitzen anders als am Gerät (zu prüfen)
+
+Beim Aufnehmen der Kamera-Szenen für Kapitel 10 (11.11.2026, `tools/aufnahmen_bauen.py`)
+lag die Kamera `frontleft` im Rahmenbaum der MuJoCo-Puppe bei y = +0.05 m und schaute
+entlang (0.81, 0.30, −0.50) im Körperrahmen: nach vorne LINKS und gut 30° nach unten;
+`frontright` spiegelbildlich. In spotlabs eigener Notiz zum Panorama (CLAUDE.md,
+`backends/real/panorama.py`) steht für den echten Spot: Die Frontkameras schauen
+**über Kreuz** (rechts 34° nach links) und **20°** nach unten. Wenn beides stimmt,
+sitzen die Frontkameras der Puppe weder gekreuzt noch im richtigen Winkel, und ein
+Programm, das im 3D-Übungsraum mit den Frontbildern rechnet (Panorama, Gesichtshöhe),
+verhält sich am Gerät anders. Nicht am Gerät nachgeprüft. Der Kurs sagt deshalb nur,
+was der Übungsraum zeigt («frontleft schaut nach vorne links»), und behauptet nichts
+über Einbauort oder Winkel am echten Spot.
+
 ## 5. Kleinigkeiten
 
 - `walk(vx=0.5, duration=2)` bringt Spot im Sim 0.77 m weit (Anlaufen und
