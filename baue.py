@@ -80,6 +80,8 @@ def python_bauen() -> tuple[int, str]:
             z.write(datei, Path("spotlab", *teile).as_posix())
             anzahl += 1
         z.write(WURZEL / "motor" / "kursmotor.py", "kursmotor.py")
+        for raum in sorted((WURZEL / "motor" / "kursraeume").glob("*.toml")):
+            z.write(raum, f"kursraeume/{raum.name}")
         z.writestr("spotlab_stand.txt", f"spotlab {spotlab.__version__} ({stand})\n")
     return anzahl, f"spotlab {spotlab.__version__} ({stand}), {zip_pfad.stat().st_size / 1e6:.2f} MB"
 

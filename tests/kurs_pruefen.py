@@ -30,6 +30,27 @@ PROZESSE = 6
 
 KOPF = "from spotlab import connect\nwith connect() as spot:\n    spot.power_on(); spot.stand()\n"
 
+# Die Erkundung mit Gedächtnis aus Kapitel 8, Platzhalter SCHRITTE und STOPP (Code vor
+# jedem Schritt, eingerückt mit 8 Leerzeichen).
+ERKUNDEN = (
+    "import math\n"
+    "def feld(x, y):\n    return (int(x // 0.5), int(y // 0.5))\n"
+    "besuche = {}\nmax_y = 0\n" + KOPF +
+    "    for schritt in range(SCHRITTE):\n"
+    "STOPP"
+    "        z = spot.state\n        max_y = max(max_y, z.y)\n"
+    "        besuche[feld(z.x, z.y)] = besuche.get(feld(z.x, z.y), 0) + 1\n"
+    "        blick = spot.look(max_distance=1.0, start=0.6, margin=0.35)\n"
+    "        bw, bz = None, None\n"
+    "        for w in sorted(range(-180, 180, 15), key=abs):\n"
+    "            if blick.direction(w).status != 'clear':\n                continue\n"
+    "            r = math.radians(z.heading + w)\n"
+    "            n = besuche.get(feld(z.x + math.cos(r), z.y + math.sin(r)), 0)\n"
+    "            if bz is None or n < bz:\n                bw, bz = w, n\n"
+    "        if bw is None:\n            spot.move(turn=90)\n"
+    "        else:\n            spot.move(turn=bw); spot.move(forward=0.5)\n"
+)
+
 # Aussagen aus dem Text: (Kapitel, Beschreibung, Raum, Start, Code, erwarteter Status oder "*",
 #                         Text in der Ausgabe, muss anstossen)
 BEHAUPTUNGEN = [
@@ -91,6 +112,28 @@ BEHAUPTUNGEN = [
     ("07", "Quiz: am Hindernis vorbei ist die Sicht frei", "moebliert", "2.3,2.6,0",
      KOPF + "    print('FREI', [t.id for t in spot.tags(id=2)])\n",
      "fertig", "FREI [2]", False),
+    ("08", "Reflex: Spot kommt in 12 Schritten nicht vom Fleck", "wohnung", "4,1.2,0",
+     KOPF + "    for i in range(12):\n"
+     "        b = spot.look(max_distance=1.0, start=0.6, margin=0.35)\n"
+     "        if b.front.status == 'clear': spot.move(forward=0.5)\n"
+     "        elif b.left.status == 'clear': spot.move(turn=90)\n"
+     "        elif b.right.status == 'clear': spot.move(turn=-90)\n"
+     "        else: spot.move(turn=180)\n"
+     "    z = spot.state\n    print('FLECK', abs(z.x - 4) < 0.05 and abs(z.y - 1.2) < 0.05)\n",
+     "fertig", "FLECK True", False),
+    ("08", "Gedächtnis: aus derselben Ecke ins obere Zimmer", "wohnung", "4,1.2,0",
+     ERKUNDEN.replace("SCHRITTE", "30").replace("STOPP", "") + "    print('OBEN', max_y > 2.8)\n",
+     "fertig", "OBEN True", False),
+    ("08", "Suche ab (1, 1): sieht Tag 5 vom oberen Zimmer aus durch die Tür", "wohnung", "1,1,90",
+     ERKUNDEN.replace("SCHRITTE", "80").replace(
+         "STOPP", "        if spot.tags(id=5):\n            break\n")
+     + "    z = spot.state\n    print('DURCH', z.y > 2.6, len(spot.tags(id=5)))\n",
+     "fertig", "DURCH True 1", False),
+] + [
+    ("08", f"Aufgabe: von {s} aus ist Tag 5 nicht sofort zu sehen", "wohnung", s,
+     KOPF + "    print('ANFANG', len(spot.tags(id=5)))\n",
+     "fertig", "ANFANG 0", False)
+    for s in ("1,1,90", "7,4,180", "1,4.5,-90")
 ]
 
 

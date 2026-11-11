@@ -161,12 +161,18 @@ UHR: Uhr | None = None
 _ABTASTER: list = []
 
 
+# Der Abtaster schreibt im Kurs höchstens 5 Zustände je Sekunde Spot-Zeit (spotlab:
+# 10). Gezeichnet wird daraus nur der Weg; bei 0.5 m/s liegen zwei Punkte 10 cm
+# auseinander. Gemessen 11.11.2026: das Schreiben kostete gut die Hälfte der Rechenzeit.
+KURS_ABTASTUNG_S = 0.2
+
+
 def _abtasten():
     jetzt = UHR.monotonic()
     for abtaster in list(_ABTASTER):
         if jetzt >= abtaster._kurs_naechste:
             abtaster._einmal(abtaster._reich)
-            abtaster._kurs_naechste = jetzt + abtaster._periode
+            abtaster._kurs_naechste = jetzt + max(abtaster._periode, KURS_ABTASTUNG_S)
 
 
 def installieren():
@@ -177,6 +183,9 @@ def installieren():
     os.environ["SPOTLAB_NUR_TROCKEN"] = "1"
     os.environ["SPOTLAB_BACKEND"] = "sim"
     sys.meta_path.insert(0, _AttrappenFinder())
+    # Die Aufzeichnung erzwingt nach jeder Zeile fsync (gegen Datenverlust bei einem
+    # Absturz am echten Spot). Ein Kurslauf schreibt in einen Wegwerf-Ordner.
+    os.fsync = lambda fd: None
 
     UHR = Uhr()
     time.time = UHR.time
@@ -203,6 +212,28 @@ def installieren():
 
     sampler.StateSampler.start = start
     sampler.StateSampler.stop = stop
+    kursraeume_einhaengen()
+
+
+# Eigene Übungsräume des Kurses (z. B. «wohnung» für Kapitel 8) liegen neben diesem
+# Modul in kursraeume/*.toml, im Format der spotlab-Vorlagen. spotlab selbst bleibt
+# unverändert: nur die Suche nach dem Raum fragt zuerst hier.
+KURSRAEUME = Path(__file__).resolve().parent / "kursraeume"
+
+
+def kursraeume_einhaengen():
+    from spotlab.welt import raum as raum_modul
+
+    if getattr(raum_modul._pfad, "_kurs", False):
+        return
+    vorher = raum_modul._pfad
+
+    def _pfad(name, workspace):
+        eigen = KURSRAEUME / f"{name}.toml"
+        return eigen if eigen.is_file() else vorher(name, workspace)
+
+    _pfad._kurs = True
+    raum_modul._pfad = _pfad
 
 
 # ================================================================ Laufen
@@ -408,6 +439,7 @@ def pruefen(ziele: list, e: dict) -> list:
 # ================================================================ Räume
 
 def raum_als_json(name: str) -> dict:
+    kursraeume_einhaengen()
     from spotlab.welt.raum import raum_laden
 
     r = raum_laden(name)

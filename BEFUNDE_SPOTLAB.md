@@ -71,6 +71,22 @@ Haltung prüfen nur die Befehle). Karten aufnehmen und navigieren geht nur am
 echten Spot. Offen: ob der Kurs MuJoCo-Läufe im Browser zeigen soll (langsamer
 Start, Kamerabilder statt Draufsicht).
 
+## 4b. `look()` kostet im 2D-Sim 0.2 s Rechenzeit
+
+Gemessen beim Bau von Kapitel 8 (11.11.2026, CPython, Raum «Wohnung» mit 8 Wänden
+und 3 Hindernissen): ein `look()` braucht rund 0.2 s, fast alles in
+`welt/wahrnehmung.py::abstandsgitter` → `kollision.sicht_frei` (1024 Sichtlinien je
+Aufruf, 125 000 Schnitttests in reinem Python). Ein Erkundungsprogramm ruft `look`
+bei jedem Schritt; 80 Schritte sind 16 s nur für die Sicht, im Browser (Pyodide)
+mehr. Der Kurs lebt damit (Schritte von 0.5 m, Notbremse 80), ändert aber nichts an
+spotlab. Vorschlag: die Sichtprüfung mit numpy vektorisieren (die Abstände tun es
+schon) oder je Pose zwischenspeichern, solange der Raum gleich bleibt.
+
+Der Kursmotor spart dafür an der Aufzeichnung: `fsync` nach jeder Zeile
+(`record/run.py::_zeile`) ist im Kurs aus, und der Zustand wird mit 5 statt 10 Hz
+mitgeschrieben. Zusammen halbierte das die Rechenzeit, ohne dass sich ein Weg
+änderte (alle 53 Prüfungen der Kapitel 1–7 blieben gleich).
+
 ## 5. Kleinigkeiten
 
 - `walk(vx=0.5, duration=2)` bringt Spot im Sim 0.77 m weit (Anlaufen und
