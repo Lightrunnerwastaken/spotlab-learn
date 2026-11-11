@@ -312,6 +312,184 @@ function karteBauen(raum, startposen) {
 
 const SPURFARBEN = ["#0ea5b0", "#e8590c", "#7048e8", "#2f9e44", "#c2255c", "#1971c2"];
 
+// ================================================================ Trockenlauf: Spot als Zeichnung
+//
+// raum=trocken: spotlab baut die echten Befehle für Licht, Ton und Haltung, bewegt
+// aber nichts. Die Bühne spielt sie ab: Spot von der Seite (pitch, Höhe), von vorne
+// (roll) und von oben (yaw), LEDs in der befohlenen Farbe, Töne über den Lautsprecher.
+// Vorzeichen wie bei spotlab: pitch positiv senkt die Nase, roll positiv hebt die
+// linke Seite, yaw positiv dreht nach links.
+
+const FARBNAMEN = { "0,0,255": "blau", "0,255,0": "grün", "255,0,0": "rot", "255,255,255": "weiss", "255,255,0": "gelb", "128,0,255": "violett" };
+const NOTEN = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+const UEBERGANG_S = 0.6;   // nur für die Zeichnung: so lange dauert ein Haltungswechsel im Bild
+
+function zustandBei(signale, t) {
+  const z = { steh: 0, pose: { roll: 0, pitch: 0, yaw: 0, height: 0 }, licht: null, ton: null };
+  let stehVon = 0, stehZiel = 0, stehT = -99;
+  let poseVon = { ...z.pose }, poseZiel = { ...z.pose }, poseT = -99;
+  const anteil = (t0, tt) => Math.max(0, Math.min(1, (tt - t0) / UEBERGANG_S));
+  const stehBei = (tt) => stehVon + (stehZiel - stehVon) * anteil(stehT, tt);
+  const poseBei = (tt) => {
+    const a = anteil(poseT, tt), p = {};
+    for (const k of Object.keys(poseZiel)) p[k] = poseVon[k] + (poseZiel[k] - poseVon[k]) * a;
+    return p;
+  };
+  for (const s of signale) {
+    if (s.t > t) break;
+    if (s.art === "stand" || s.art === "sit" || s.art === "power_off") {
+      stehVon = stehBei(s.t); stehZiel = s.art === "stand" ? 1 : 0; stehT = s.t;
+      if (s.art !== "stand") { poseVon = poseBei(s.t); poseZiel = { roll: 0, pitch: 0, yaw: 0, height: 0 }; poseT = s.t; }
+    } else if (s.art === "pose") {
+      poseVon = poseBei(s.t);
+      poseZiel = { roll: s.roll || 0, pitch: s.pitch || 0, yaw: s.yaw || 0, height: s.height || 0 };
+      poseT = s.t;
+    } else if (s.art === "lights" && t < s.t + s.duration) {
+      z.licht = { rgb: s.color, hell: s.brightness };
+    } else if (s.art === "beep" && t < s.t + s.duration) {
+      z.ton = s;
+    }
+  }
+  z.steh = stehBei(t);
+  z.pose = poseBei(t);
+  return z;
+}
+
+// Töne: ein Rechteckton wie ein Summer. Erst nach einem Klick erlaubt der Browser Ton.
+const TON = {
+  ctx: null,
+  an() { return speicher.lesen("ton", true); },
+  vorbereiten() {
+    if (!this.an()) return;
+    try {
+      this.ctx = this.ctx || new (window.AudioContext || window.webkitAudioContext)();
+      this.ctx.resume();
+    } catch (e) { this.ctx = null; }
+  },
+  spielen(note, oktave, dauer) {
+    if (!this.an() || !this.ctx) return;
+    const midi = 12 * (oktave + 1) + (NOTEN[note] ?? 0);
+    const osc = this.ctx.createOscillator(), laut = this.ctx.createGain();
+    osc.type = "square";
+    osc.frequency.value = 440 * Math.pow(2, (midi - 69) / 12);
+    laut.gain.value = 0.05;
+    osc.connect(laut).connect(this.ctx.destination);
+    const jetzt = this.ctx.currentTime;
+    osc.start(jetzt);
+    osc.stop(jetzt + dauer);
+  },
+};
+
+function buehneBauen() {
+  const box = el("div", { class: "karte buehne" });
+  const svg = s("svg", { viewBox: "0 0 330 150", preserveAspectRatio: "xMidYMid meet" });
+  svg.style.aspectRatio = "330 / 150";
+  const legende = el("div", { class: "legende" });
+  const tonKnopf = el("button", { class: "tonknopf", title: "Ton ein- oder ausschalten" });
+  const tonZeigen = () => { tonKnopf.textContent = TON.an() ? "🔊 Ton an" : "🔇 Ton aus"; };
+  tonKnopf.addEventListener("click", () => { speicher.schreiben("ton", !TON.an()); tonZeigen(); });
+  tonZeigen();
+  box.append(svg, el("div", { class: "buehnenfuss" }, legende, tonKnopf));
+
+  const BODEN = 128, M = 90;      // Boden in Pixeln, 90 Pixel je Meter
+  const AUS = "#41474c";
+  ["von der Seite", "von vorne", "von oben"].forEach((name, i) => {
+    const t = s("text", { x: 55 + 110 * i, y: 145, "font-size": 9, fill: "#8a8f93", "text-anchor": "middle" });
+    t.textContent = name; svg.append(t);
+    if (i < 2) svg.append(s("line", { x1: 110 * i + 8, y1: BODEN, x2: 110 * i + 102, y2: BODEN, stroke: "#c4c8ca", "stroke-width": 1.5 }));
+    if (i) svg.append(s("line", { x1: 110 * i, y1: 10, x2: 110 * i, y2: 135, stroke: "#e2e4e5", "stroke-width": 1 }));
+  });
+  const led = (cx, cy, r) => {
+    const halo = s("circle", { cx, cy, r: r * 2.6, fill: "none", opacity: 0 });
+    const kern = s("circle", { cx, cy, r, fill: AUS, stroke: "#24282b", "stroke-width": 0.6 });
+    return { halo, kern };
+  };
+  const bein = () => s("polyline", { fill: "none", stroke: "#3a3f43", "stroke-width": 4, "stroke-linecap": "round", "stroke-linejoin": "round" });
+
+  // von der Seite: Spot schaut nach rechts
+  const seiteBeine = [bein(), bein()];
+  const seite = s("g");
+  const seiteLed = [led(39, -3, 2.6), led(-39, -3, 2.6)];
+  seite.append(
+    s("rect", { x: -38, y: -8, width: 76, height: 16, rx: 5, fill: "#f5c518", stroke: "#24282b", "stroke-width": 1.2 }),
+    s("rect", { x: 26, y: -7, width: 14, height: 14, rx: 3, fill: "#24282b" }),
+    ...seiteLed.flatMap((l) => [l.halo, l.kern]),
+  );
+  const note = s("text", { x: 0, y: 0, "font-size": 11, "font-weight": 700, fill: "#24282b", opacity: 0 });
+  svg.append(...seiteBeine, seite, note);
+
+  // von vorne: Spots linke Seite ist rechts im Bild
+  const vorneBeine = [bein(), bein()];
+  const vorne = s("g");
+  const vorneLed = [led(-11, -1, 2.4), led(0, -1, 2.4), led(11, -1, 2.4)];
+  vorne.append(
+    s("rect", { x: -22, y: -8, width: 44, height: 16, rx: 5, fill: "#f5c518", stroke: "#24282b", "stroke-width": 1.2 }),
+    ...vorneLed.flatMap((l) => [l.halo, l.kern]),
+  );
+  svg.append(...vorneBeine, vorne);
+
+  // von oben: die Nase zeigt nach oben
+  const oben = s("g");
+  const obenLed = [led(0, -38, 2.6)];
+  oben.append(
+    s("rect", { x: -22, y: -38, width: 44, height: 76, rx: 6, fill: "#f5c518", stroke: "#24282b", "stroke-width": 1.2 }),
+    s("rect", { x: -16, y: -40, width: 32, height: 12, rx: 3, fill: "#24282b" }),
+    ...obenLed.flatMap((l) => [l.halo, l.kern]),
+  );
+  svg.append(s("line", { x1: 275, y1: 22, x2: 275, y2: 118, stroke: "#e2e4e5", "stroke-dasharray": "3 3" }), oben);
+
+  const alleLeds = [...seiteLed, ...vorneLed, ...obenLed];
+
+  function zeigen(z, t) {
+    const { steh, pose, licht, ton } = z;
+    const hoehe = 0.30 + 0.20 * steh + pose.height * steh;          // Körpermitte über dem Boden, m
+    const pitch = -18 * (1 - steh) + pose.pitch;                      // sitzend: Heck unten, Nase oben
+    const y = BODEN - hoehe * M;
+
+    seite.setAttribute("transform", `translate(55,${y}) rotate(${pitch})`);
+    const rad = (pitch * Math.PI) / 180, c = Math.cos(rad), sn = Math.sin(rad);
+    const welt = (lx, ly) => [55 + lx * c - ly * sn, y + lx * sn + ly * c];
+    [[28, 8, 83], [-28, 8, 25 - 4 * (1 - steh)]].forEach(([hx, hy, fuss], i) => {
+      const [x0, y0] = welt(hx, hy);
+      const kx = (x0 + fuss) / 2 - 7, ky = (y0 + BODEN) / 2;
+      seiteBeine[i].setAttribute("points", `${x0},${y0} ${kx},${ky} ${fuss},${BODEN}`);
+    });
+
+    vorne.setAttribute("transform", `translate(165,${y}) rotate(${-pose.roll})`);
+    const rr = (-pose.roll * Math.PI) / 180, rc = Math.cos(rr), rs = Math.sin(rr);
+    [[-15, 8, 149], [15, 8, 181]].forEach(([hx, hy, fuss], i) => {
+      const x0 = 165 + hx * rc - hy * rs, y0 = y + hx * rs + hy * rc;
+      vorneBeine[i].setAttribute("points", `${x0},${y0} ${fuss},${BODEN}`);
+    });
+
+    oben.setAttribute("transform", `translate(275,70) rotate(${-pose.yaw})`);
+
+    const farbe = licht ? `rgb(${licht.rgb.join(",")})` : null;
+    const deckung = licht ? 0.45 + 0.55 * Math.min(1, licht.hell) : 0;
+    alleLeds.forEach(({ halo, kern }) => {
+      kern.setAttribute("fill", farbe || AUS);
+      kern.setAttribute("fill-opacity", farbe ? 0.5 + 0.5 * Math.min(1, licht.hell * 2) : 1);
+      halo.setAttribute("fill", farbe || "none");
+      halo.setAttribute("opacity", deckung * 0.45);
+    });
+
+    if (ton) {
+      const [nx, ny] = welt(30, -16);
+      note.setAttribute("x", nx); note.setAttribute("y", ny);
+      note.textContent = `♪ ${ton.note}${ton.octave}`;
+      note.setAttribute("opacity", 1);
+    } else note.setAttribute("opacity", 0);
+
+    const lichtText = licht ? `${FARBNAMEN[licht.rgb.join(",")] || "rgb(" + licht.rgb.join(", ") + ")"} ${Math.round(licht.hell * 100)} %` : "aus";
+    const g = (v) => `${Math.round(v)}°`;
+    legende.textContent =
+      `t = ${t.toFixed(1)} s   ${steh > 0.5 ? "steht" : "sitzt"}   Licht: ${lichtText}   Ton: ${ton ? ton.note + ton.octave : "–"}\n` +
+      `roll ${g(pose.roll)}  pitch ${g(pose.pitch)}  yaw ${g(pose.yaw)}  height ${pose.height.toFixed(2)} m`;
+  }
+  zeigen(zustandBei([], 0), 0);
+  return { box, zeigen, zuruecksetzen() { zeigen(zustandBei([], 0), 0); } };
+}
+
 // ================================================================ Ausführen
 
 // Ein gemeinsamer Python-Worker für alle Codefelder (web/motor.js).
@@ -387,7 +565,12 @@ function codeAusfuehrbar({ schluessel, code, raum, start, starts = null, ziele =
   const startliste = starts && starts.length ? starts : [start || ""];
   let startposen = [];
   if (raum === "keiner") raum = null;
-  if (raum) {
+  let buehne = null;
+  if (raum === "trocken") {
+    buehne = buehneBauen();
+    ergebnis.classList.add("mitkarte");
+    ergebnis.append(buehne.box);
+  } else if (raum) {
     raumHolen(raum).then((r) => {
       if (!r) return;
       startposen = startliste.map((st) => (st ? st.split(",").map(Number) : r.start));
@@ -432,7 +615,7 @@ function codeAusfuehrbar({ schluessel, code, raum, start, starts = null, ziele =
       text += ausgabeText(lauf);
     });
     let fuss = "";
-    if (gruppe.status === "spielt") fuss = `<span class="leise">▶ Spot-Zeit ${gruppe.jetzt.toFixed(1)} von ${gruppe.dauer} s · ${gruppe.tempo}-fach schneller abgespielt</span>`;
+    if (gruppe.status === "spielt") fuss = `<span class="leise">▶ Spot-Zeit ${gruppe.jetzt.toFixed(1)} von ${gruppe.dauer} s · ${gruppe.tempo > 1 ? gruppe.tempo + "-fach schneller abgespielt" : "in Echtzeit"}</span>`;
     else if (gruppe.status === "fertig") fuss = `<span class="leise">— fertig nach ${gruppe.dauer} s Spot-Zeit</span>`;
     konsole.innerHTML = '<span class="prompt">&gt;&gt;&gt;</span> \n' + text + fuss;
     konsole.scrollTop = konsole.scrollHeight;
@@ -458,6 +641,7 @@ function codeAusfuehrbar({ schluessel, code, raum, start, starts = null, ziele =
     if (aktiv) { aktiv.abbrechen(); return; }
     document.dispatchEvent(new CustomEvent("neuer-lauf", { detail: schluessel }));
     if (karte) karte.zuruecksetzen(startposen);
+    if (buehne) { buehne.zuruecksetzen(); TON.vorbereiten(); }   // Ton nur nach einem Klick erlaubt
     fehlerhilfe.style.display = "none";
     laeuft(true);
 
@@ -510,6 +694,36 @@ function codeAusfuehrbar({ schluessel, code, raum, start, starts = null, ziele =
       });
     }
     if (karte) laeufe.forEach((l, i) => karte.zeigen(i, l.weg, l.angestossen));
+
+    // Trockenlauf: Licht, Ton und Haltung in Echtzeit abspielen
+    const sig = (buehne && laeufe[0] && laeufe[0].signale) || [];
+    if (buehne && sig.length) {
+      const endT = Math.max(dauer, ...sig.map((x) => x.t + (x.duration || 0)), sig[sig.length - 1].t + UEBERGANG_S);
+      gruppe.tempo = 1;
+      await new Promise((fertig) => {
+        const t0 = performance.now();
+        const gespielt = new Set();
+        let ende = false;
+        wiedergabeEnde = () => { ende = true; };
+        function bild() {
+          const t = ende ? endT : (performance.now() - t0) / 1000;
+          if (!ende) {
+            sig.forEach((x, i) => {
+              if (x.art === "beep" && x.t <= t && !gespielt.has(i)) {
+                gespielt.add(i);
+                if (t < x.t + x.duration) TON.spielen(x.note, x.octave, x.t + x.duration - t);
+              }
+            });
+          }
+          buehne.zeigen(zustandBei(sig, t), Math.min(t, endT));
+          gruppe.jetzt = Math.min(t, dauer);
+          konsoleZeigen(gruppe);
+          if (t >= endT) { fertig(); return; }
+          setTimeout(bild, 40);
+        }
+        bild();
+      });
+    }
     gruppe.status = status;
     konsoleZeigen(gruppe);
     aktiv = null;
@@ -534,7 +748,8 @@ function codeAusfuehrbar({ schluessel, code, raum, start, starts = null, ziele =
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); e.stopImmediatePropagation(); starten(); }
   }, true);
 
-  if (raum) info.textContent = "Simulator · Raum «" + raum + "»";
+  if (raum === "trocken") info.textContent = "Trockenlauf · Spot als Zeichnung";
+  else if (raum) info.textContent = "Simulator · Raum «" + raum + "»";
   return el("div", { class: "codefeld" }, editor.huelle, el("div", { class: "knoepfe" }, info, knopfStart, knopfReset, knopfLaden), ergebnis);
 }
 

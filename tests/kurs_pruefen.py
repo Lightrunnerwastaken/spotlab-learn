@@ -129,6 +129,23 @@ BEHAUPTUNGEN = [
          "STOPP", "        if spot.tags(id=5):\n            break\n")
      + "    z = spot.state\n    print('DURCH', z.y > 2.6, len(spot.tags(id=5)))\n",
      "fertig", "DURCH True 1", False),
+    ("09", "Quiz: lights wartet die Dauer ab, erst dann geht move", "trocken", "",
+     "import time\n" + KOPF + "    a = time.time(); spot.lights('red', duration=3)\n"
+     "    print('WARTET', round(time.time() - a, 1))\n",
+     "fertig", "WARTET 3.0", False),
+    ("09", "Quiz: beep('H') ist ein ValueError", "trocken", "",
+     KOPF + "    spot.beep('H')\n", "fehler", "ValueError: note muss C, D, E, F, G, A oder B sein", False),
+    ("09", "2D-Übungsraum: kein Licht, Ton, pose; look und tags ja", "leer", "",
+     "from spotlab import connect\nwith connect() as spot:\n"
+     "    print('KANN', [spot.supports(f) for f in ['lights', 'beep', 'pose', 'look', 'tags', 'camera']])\n",
+     "fertig", "KANN [False, False, False, True, True, False]", False),
+    ("09", "Trockenlauf kann Licht, Ton und pose", "trocken", "",
+     "from spotlab import connect\nwith connect() as spot:\n"
+     "    print('KANN', [spot.supports(f) for f in ['lights', 'beep', 'pose']])\n",
+     "fertig", "KANN [True, True, True]", False),
+    ("09", "Das universelle Programm (Aufgabe 2) läuft auch im Trockenlauf durch", "trocken", "",
+     (WURZEL / "tests" / "loesungen" / "09-licht-ton-haltung-3-9.py").read_text(encoding="utf-8"),
+     "fertig", "Begrüssung fertig", False),
 ] + [
     ("08", f"Aufgabe: von {s} aus ist Tag 5 nicht sofort zu sehen", "wohnung", s,
      KOPF + "    print('ANFANG', len(spot.tags(id=5)))\n",

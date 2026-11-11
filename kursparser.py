@@ -27,6 +27,9 @@ Innerhalb eines Abschnitts gibt es vier Arten von Blöcken:
     ziel: ausgabe 42               (Text muss in der Ausgabe stehen)
     ziel: aufgerufen move          (Kommando muss vorkommen)
     ziel: gefahren 1.0             (mindestens so viele Meter Weg)
+    ziel: licht blue green         (genau diese Farben nacheinander, raum=trocken)
+    ziel: toene C5 E5 G5           (genau diese Töne nacheinander)
+    ziel: haltung pitch 15         (ein pose() mit diesem Wert, ± 0.5)
     tipp: ein Tipp, der nach dem ersten Fehlversuch erscheint
     ---
     ...Startcode...
@@ -50,6 +53,9 @@ ZIELARTEN = {
     "gefahren": 1,
     "steht": 0,
     "sitzt": 0,
+    "licht": "liste",     # Farben in dieser Reihenfolge: licht blue green
+    "toene": "liste",     # Töne in dieser Reihenfolge: toene C5 E5 G5
+    "haltung": 2,         # irgendein pose() mit diesem Wert: haltung pitch 15
 }
 
 
@@ -120,9 +126,17 @@ def _ziel(text: str, wo: str) -> dict:
     if anzahl is None:
         return {"art": art, "werte": [rest.strip().strip('"')]}
     werte = rest.split()
+    if anzahl == "liste":
+        if not werte:
+            raise KursFehler(f"{wo}: Ziel '{art}' braucht mindestens einen Wert")
+        return {"art": art, "werte": werte}
     if len(werte) != anzahl:
         raise KursFehler(f"{wo}: Ziel '{art}' braucht {anzahl} Werte, hat {len(werte)}")
-    if art != "aufgerufen":
+    if art == "haltung":
+        if werte[0] not in ("roll", "pitch", "yaw", "height"):
+            raise KursFehler(f"{wo}: haltung kennt roll, pitch, yaw, height, nicht '{werte[0]}'")
+        werte = [werte[0], float(werte[1])]
+    elif art != "aufgerufen":
         werte = [float(w) for w in werte]
     return {"art": art, "werte": werte}
 

@@ -213,6 +213,40 @@ def installieren():
     sampler.StateSampler.start = start
     sampler.StateSampler.stop = stop
     kursraeume_einhaengen()
+    trockenlauf_wie_am_geraet()
+
+
+# Am echten Spot WARTEN lights() und beep() die Dauer ab (api/signals.py::_run,
+# time.sleep(duration)); im Trockenlauf kehren sie sofort zurück. Ohne Ausgleich
+# lägen im Kurs alle Signale auf demselben Zeitpunkt, und ein Programm, das am
+# Gerät 5 s blinkt, wäre hier in null Sekunden vorbei (BEFUNDE_SPOTLAB.md, 4c).
+# pose(): am Gerät wartet warte_auf, bis der Körper steht; wie lange das dauert,
+# ist nicht gemessen. HALTUNG_S ist eine ANNAHME, dieselbe wie im Physikmodus von
+# spotlab (1 s je Haltungsänderung, bis Abnahmepunkt A41).
+HALTUNG_S = 1.0
+
+
+def trockenlauf_wie_am_geraet():
+    from spotlab.api import body, signals
+    from spotlab.backends.dryrun import DryRunBackend
+
+    if getattr(signals._run, "_kurs", False):
+        return
+    run_vorher, pose_vorher = signals._run, body.pose
+
+    def _run(spot, art, behavior, duration, **daten):
+        run_vorher(spot, art, behavior, duration, **daten)
+        if spot.robot is None and isinstance(spot.backend, DryRunBackend):
+            time.sleep(duration)
+
+    def pose(spot, *args, **kwargs):
+        pose_vorher(spot, *args, **kwargs)
+        if isinstance(spot.backend, DryRunBackend):
+            time.sleep(HALTUNG_S)
+
+    _run._kurs = True
+    signals._run = _run
+    body.pose = pose
 
 
 # Eigene Übungsräume des Kurses (z. B. «wohnung» für Kapitel 8) liegen neben diesem
@@ -245,7 +279,11 @@ def lauf(code: str, raum: str = "leer", start: str = "", grenze_s: float = GRENZ
     programm = ordner / "programm.py"
     programm.write_text(code, encoding="utf-8")
 
-    if raum and raum != "keiner":
+    # raum=trocken: der Trockenlauf von spotlab (echte Protobufs, nichts bewegt sich).
+    # Er kann, was der 2D-Sim nicht kann: lights, beep, pose. Die Seite zeigt dann
+    # statt der Karte eine Spot-Zeichnung, die die Signale abspielt.
+    os.environ["SPOTLAB_BACKEND"] = "dryrun" if raum == "trocken" else "sim"
+    if raum and raum not in ("keiner", "trocken"):
         os.environ["SPOTLAB_RAUM"] = raum
     else:
         os.environ.pop("SPOTLAB_RAUM", None)
@@ -300,8 +338,48 @@ def lauf(code: str, raum: str = "leer", start: str = "", grenze_s: float = GRENZ
         "weg": weg,
         "angestossen": [[d.get("x"), d.get("y")] for d in angestossen],
         "kommandos": [e.get("daten", {}).get("name") for e in ereignisse if e.get("art") == "kommando"],
+        "signale": _signale(ereignisse),
         "dauer": round(UHR.v - beginn, 1),
     }
+
+
+# Dieselben Namen wie spotlab.api.signals.COLORS (dort steht die Wahrheit).
+FARBEN = {"blue": (0, 0, 255), "green": (0, 255, 0), "red": (255, 0, 0),
+          "white": (255, 255, 255), "yellow": (255, 255, 0), "purple": (128, 0, 255)}
+FARBEN_DEUTSCH = {"blue": "blau", "green": "grün", "red": "rot", "white": "weiss",
+                  "yellow": "gelb", "purple": "violett"}
+
+
+def farbname(rgb) -> str:
+    for name, wert in FARBEN.items():
+        if rgb is not None and tuple(rgb) == wert:
+            return name
+    return "rgb" + str(tuple(rgb)) if rgb is not None else "?"
+
+
+SIGNALE = {
+    "lights": ("color", "brightness", "duration"),
+    "beep": ("note", "octave", "duration"),
+    "pose": ("roll", "pitch", "yaw", "height"),
+    "stand": (), "sit": (), "power_on": (), "power_off": (),
+}
+
+
+def _signale(ereignisse: list) -> list:
+    """Licht, Ton, Haltung als Zeitstrahl für die Spot-Zeichnung: [{t, art, ...}]."""
+    zeiten = [e["t"] for e in ereignisse if isinstance(e.get("t"), (int, float))]
+    t0 = min(zeiten) if zeiten else 0.0
+    liste = []
+    for e in ereignisse:
+        d = e.get("daten", {})
+        if e.get("art") != "kommando" or d.get("name") not in SIGNALE:
+            continue
+        eintrag = {"t": round(e.get("t", t0) - t0, 2), "art": d["name"]}
+        for feld in SIGNALE[d["name"]]:
+            if feld in d:
+                eintrag[feld] = d[feld]
+        liste.append(eintrag)
+    return liste
 
 
 def lauf_mit_pruefung(code, raum, start, ziele=None):
@@ -420,6 +498,24 @@ def pruefen(ziele: list, e: dict) -> list:
             strecke = sum(math.hypot(b[1] - a[1], b[2] - a[2]) for a, b in zip(weg, weg[1:]))
             text = f"Spot legt mindestens {w[0]:g} m zurück"
             ok, detail = strecke >= w[0], f"Er ist {strecke:.2f} m gegangen."
+        elif art == "licht":
+            folge = [farbname(s.get("color")) for s in e.get("signale", []) if s["art"] == "lights"]
+            text = "Spot leuchtet nacheinander: " + ", ".join(FARBEN_DEUTSCH.get(f, f) for f in w)
+            ok = folge == list(w)
+            detail = "Er leuchtet: " + (", ".join(FARBEN_DEUTSCH.get(f, f) for f in folge) or "gar nicht") + "."
+        elif art == "toene":
+            folge = [f"{s.get('note')}{s.get('octave')}" for s in e.get("signale", []) if s["art"] == "beep"]
+            text = "Spot spielt nacheinander: " + " ".join(w)
+            ok = folge == [t.upper() for t in w]
+            detail = "Er spielt: " + (" ".join(folge) or "gar nichts") + "."
+        elif art == "haltung":
+            feld, soll = w
+            werte = [s.get(feld, 0.0) for s in e.get("signale", []) if s["art"] == "pose"]
+            einheit = " m" if feld == "height" else "°"
+            text = f"Spot nimmt eine Haltung mit {feld} = {soll:g}{einheit} ein"
+            ok = any(abs(v - soll) <= 0.5 for v in werte)
+            detail = ("Er hat nie pose() bekommen." if not werte
+                      else f"Seine Werte für {feld}: " + ", ".join(f"{v:g}" for v in werte) + ".")
         elif art in ("steht", "sitzt"):
             haltung = None
             for k in e["kommandos"]:

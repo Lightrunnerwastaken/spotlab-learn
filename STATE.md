@@ -4,9 +4,14 @@
 Repository: github.com/Lightrunnerwastaken/spotlab-learn (öffentlich).
 
 Fertig:
-- Kapitel 1–8 geschrieben (Einführung, Hallo Spot, Bewegen, Zustand, Umgebung,
-  Hindernissen ausweichen, Objekte finden, Projekt: Unbekannter Raum). Kapitel 9–14 als
-  Vorschau (`bald: ja`).
+- Kapitel 1–9 geschrieben (Einführung, Hallo Spot, Bewegen, Zustand, Umgebung,
+  Hindernissen ausweichen, Objekte finden, Projekt: Unbekannter Raum, Licht/Ton/Haltung).
+  Kapitel 10–14 als Vorschau (`bald: ja`).
+- Kapitel 9 (11.11. abends): `raum=trocken` = spotlabs Trockenlauf; die Seite zeigt statt
+  der Karte eine Bühne (Spot von der Seite/vorne/oben, LEDs, Töne per WebAudio, Ton-Knopf).
+  Kursmotor liefert `signale` (Zeitstrahl), lights/beep warten wie am Gerät, pose 1 s
+  (Annahme). Neue Ziele `licht`, `toene`, `haltung`. Aufgabe 2 läuft im 2D-Raum und
+  verlangt dadurch `supports()`.
 - Kapitel 8 (11.11. abends): Reflex bleibt stecken (Spot dreht sich vor der Kiste nur
   um), Gedächtnis mit Feldern 0.5 m + Dictionary + eigene Zahlenkarte, Tag 5 im
   Unbekannten finden, Aufgabe von drei Starts (30–45 Schritte), Projektideen.
@@ -23,11 +28,11 @@ Fertig:
   Thread, Attrappen für grpc/jwt/cryptography/urllib3/requests/keyring/pynmea2.
   Gegen den alten Echtzeit-Server verglichen: gleiche Wege, gleiche Zeiten.
 - Aufgaben mit mehreren Startplätzen (`starts=`), Ziel `ende_in`, Hinweis beim Anstossen.
-- `tests/kurs_pruefen.py` nimmt denselben Motor: 64 von 64 in Ordnung (11 s).
+- `tests/kurs_pruefen.py` nimmt denselben Motor: 81 von 81 in Ordnung (19 s).
 - Im Browser geprüft: Beispiel aus Kapitel 3, Türaufgabe aus Kapitel 6 (vier Starts,
   alle Ziele erfüllt). Erster Start lädt Python etwa 20 s, danach Sekunden.
 
 Offen:
-- Kapitel 9–11 (Licht/Ton/Haltung, Kameras, Karten) brauchen Fähigkeiten, die der
-  2D-Sim nicht hat (Befund 4); MuJoCo läuft im Browser nicht. Weg noch offen.
+- Kapitel 10–11 (Kameras, Karten) brauchen Fähigkeiten, die weder der 2D-Sim noch der
+  Trockenlauf echt liefern (Befund 4); MuJoCo läuft im Browser nicht. Weg noch offen.
 - Der Autor hat den Kurs noch nicht selbst durchgespielt.

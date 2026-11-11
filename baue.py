@@ -49,7 +49,7 @@ def raeume_bauen(kurs: dict) -> list[str]:
     for k in kurs["kapitel"]:
         for a in k["abschnitte"]:
             for b in a["bloecke"]:
-                if b.get("raum") and b["raum"] != "keiner":
+                if b.get("raum") and b["raum"] not in ("keiner", "trocken"):
                     namen.add(b["raum"])
     ziel = WEB / "raeume"
     ziel.mkdir(exist_ok=True)

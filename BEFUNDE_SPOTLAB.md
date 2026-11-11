@@ -87,6 +87,22 @@ Der Kursmotor spart dafür an der Aufzeichnung: `fsync` nach jeder Zeile
 mitgeschrieben. Zusammen halbierte das die Rechenzeit, ohne dass sich ein Weg
 änderte (alle 53 Prüfungen der Kapitel 1–7 blieben gleich).
 
+## 4c. Im Trockenlauf kehren `lights()` und `beep()` sofort zurück
+
+Am echten Spot wartet `api/signals.py::_run` die Dauer ab (`time.sleep(duration)`),
+im Trockenlauf (`spot.robot is None`) kehrt es nach dem Protobuf-Check sofort zurück.
+Ein Programm, das am Gerät 5 s lang blinkt, ist im Trockenlauf in null Sekunden
+vorbei, und alle Signale tragen denselben Zeitstempel. Wer den Trockenlauf nutzt,
+um ein Programm zu Hause zu prüfen («spotlab run --dryrun»), sieht damit ein
+anderes Zeitverhalten als am Gerät. Der Kurs gleicht es aus
+(`kursmotor.trockenlauf_wie_am_geraet`: schläft die Dauer auf der virtuellen Uhr,
+nach `pose()` 1 s als Annahme). Vorschlag: im Trockenlauf ebenfalls schlafen.
+
+Dazu, für Kapitel 9 festgehalten: Notennamen sind englisch (`"B"` ist das deutsche
+H, `beep("H")` gibt einen ValueError), und `pose()` beschreibt die ganze Haltung,
+nicht eine Änderung — beides ist richtig, aber eine Falle für deutschsprachige
+Anfänger, die der Kurs ausdrücklich erklärt.
+
 ## 5. Kleinigkeiten
 
 - `walk(vx=0.5, duration=2)` bringt Spot im Sim 0.77 m weit (Anlaufen und
