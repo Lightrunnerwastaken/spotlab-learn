@@ -545,6 +545,13 @@ def lauf(code: str, raum: str = "leer", start: str = "", grenze_s: float = GRENZ
     ereignisse = _jsonl(lauf_ordner / "ereignisse.jsonl") if lauf_ordner else []
     weg = _weg(lauf_ordner) if lauf_ordner else []
     angestossen = [e.get("daten", {}) for e in ereignisse if e.get("art") == "angestossen"]
+    verweigert = [e.get("daten", {}) for e in ereignisse if e.get("art") == "treppe_verweigert"]
+    if verweigert:
+        # spotlab schreibt das nur in die Aufzeichnung; im Programm läuft walk() einfach
+        # weiter, und Spot steht. Der Kurs sagt es dazu (wie die GUI im Protokoll).
+        d = verweigert[0]
+        ausgabe += (f"\n⚠ Spot ist bei x = {d.get('x', 0):.2f}, y = {d.get('y', 0):.2f} an der Treppe "
+                     f"stehen geblieben: Hier geht es nur {d.get('verlangt', '?')} (Nase bergauf).\n")
     fehler = fehler_kurz(ausgabe) if status == "fehler" else None
     if fehler and angestossen and "abgelaufen" in fehler["meldung"]:
         # spotlab sagt hier nur „abgelaufen“ (BEFUNDE_SPOTLAB.md, Befund 2);
@@ -562,6 +569,7 @@ def lauf(code: str, raum: str = "leer", start: str = "", grenze_s: float = GRENZ
         "kommandos": [e.get("daten", {}).get("name") for e in ereignisse if e.get("art") == "kommando"],
         "signale": _signale(ereignisse),
         "bilder": _bilder(ordner),
+        "treppe_verweigert": len(verweigert),
         "mensch": _mensch_spur(plan, max([p[0] for p in weg], default=0.0)) if plan else None,
         "dauer": round(UHR.v - beginn, 1),
     }
@@ -731,6 +739,10 @@ def pruefen(ziele: list, e: dict) -> list:
                 ok = d <= w[0] and any(math.hypot(p[1] - weg[0][1], p[2] - weg[0][2]) > 1.0 for p in weg)
                 detail = (f"Er endet {d:.2f} m vom Start entfernt." if d > w[0]
                           else "" if ok else "Er war nie weiter als 1 m vom Start weg.")
+        elif art == "treppe_richtig":
+            n = e.get("treppe_verweigert", 0)
+            text = "Spot nimmt die Treppe nur mit der Nase bergauf"
+            ok, detail = n == 0, ("" if n == 0 else "An der Treppe ist er falsch herum stehen geblieben.")
         elif art in ("mensch_abstand", "mensch_nah"):
             spur = e.get("mensch") or []
 

@@ -4,8 +4,20 @@
 Repository: github.com/Lightrunnerwastaken/spotlab-learn (öffentlich).
 
 Fertig:
-- Kapitel 1–12 geschrieben (… Kameras und Tiefe, Karten und Navigation, Einem
-  Menschen folgen). Kapitel 13–14 als Vorschau (`bald: ja`).
+- Alle 14 Kapitel geschrieben (… Einem Menschen folgen, Treppen und Kanten, Am
+  echten Spot).
+- Kapitel 13 (11.11. abends): Raum «treppe» von spotlab; `stairs()`, Nase bergauf
+  (vorwärts hoch, rückwärts runter), Aufgabe hinauf/Tag 3/rückwärts runter von drei
+  Starts (Ziel `treppe_richtig`: kein `treppe_verweigert` in der Aufzeichnung; der
+  Kursmotor hängt dann eine ⚠-Zeile an die Ausgabe), Kante am Podest (look blocked,
+  Spot bleibt stehen), `treppen = "auto"/"aus"`; A25 am Gerät offen, im Text gesagt.
+- Kapitel 14 (11.11. abends): App-Auswahl (Übungsraum 3D, virtuell, Trockenlauf,
+  Physik 3D, Echter Spot), Ablauf Übungsraum → Trockenlauf → Roboter, `supports()`,
+  connect am Gerät (Anmelden, Uhr, Not-Aus, Lease), Aufräumen, «Kontrolle übernehmen»,
+  Akku wechseln/Aufrichten, Läufe lesen über `spot.recorder.dir`, Gehzeit-Experiment,
+  Projektideen. Nur Lesestoff und Quiz zu allem, was den echten Spot braucht.
+- Die Seite kennt keine Tabellen und keine ```-Blöcke ohne Sprache: Formeln und
+  Konfiguration als `| `-Zeilen, Listen statt Tabellen.
 - Kapitel 12 (11.11. abends): `raum=mensch-<name>` = ein Mensch mit Tag 9 auf dem
   Rücken geht einen festen Weg (`kursmotor.MENSCHEN`, Tag wird bei jeder Abfrage an
   seine Stelle geschoben; spotlab unverändert). Die Seite zeichnet ihn mit (Ergebnis
@@ -45,11 +57,11 @@ Fertig:
   Thread, Attrappen für grpc/jwt/cryptography/urllib3/requests/keyring/pynmea2.
   Gegen den alten Echtzeit-Server verglichen: gleiche Wege, gleiche Zeiten.
 - Aufgaben mit mehreren Startplätzen (`starts=`), Ziel `ende_in`, Hinweis beim Anstossen.
-- `tests/kurs_pruefen.py` nimmt denselben Motor: 116 von 116 in Ordnung (17 s).
+- `tests/kurs_pruefen.py` nimmt denselben Motor: 133 von 133 in Ordnung (16 s).
 - Im Browser geprüft: Beispiel aus Kapitel 3, Türaufgabe aus Kapitel 6 (vier Starts,
   alle Ziele erfüllt). Erster Start lädt Python etwa 20 s, danach Sekunden.
 
 Offen:
-- Kapitel 13–14 (Treppen, echter Spot). GraphNav selbst ist im Kurs nicht
+- GraphNav selbst ist im Kurs nicht
   ausführbar (nur am Gerät); Kamerabilder sind gerendert, nicht vom Gerät.
 - Der Autor hat den Kurs noch nicht selbst durchgespielt.

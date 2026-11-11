@@ -44,9 +44,7 @@ D) 60 cm rechts von Spot.
 
 Der erste Teil des Reglers dreht Spot so, dass er den Menschen **anschaut**. Die Regel ist einfach: Je weiter der Mensch zur Seite steht, desto schneller dreht Spot. Ist die Peilung null, dreht er gar nicht.
 
-```
-Drehtempo = K × Peilung
-```
+| Drehtempo = K × Peilung
 
 `K` ist eine Zahl, die du wählst. Mit `K = 1.2` dreht Spot bei 10° Peilung mit 12° pro Sekunde.
 
@@ -99,9 +97,7 @@ D) Der Mensch geht im Zickzack.
 
 Der zweite Teil des Reglers sorgt dafür, dass Spot hinterhergeht, aber nicht zu nahe kommt. spotlabs Folgemodus will **1.6 m** Abstand halten. Ist der Mensch weiter weg, geht Spot vorwärts, umso schneller, je grösser der Unterschied:
 
-```
-Tempo = 0.6 × (Abstand − 1.6)
-```
+| Tempo = 0.6 × (Abstand − 1.6)
 
 Dazu kommen drei Regeln, die spotlab genau so hat:
 

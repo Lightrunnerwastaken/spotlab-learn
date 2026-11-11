@@ -132,8 +132,9 @@ Weg je Tag im Raumformat) im Raumeditor, damit man Folgen ohne Roboter üben kan
 
 ## 5. Kleinigkeiten
 
-- `walk(vx=0.5, duration=2)` bringt Spot im Sim 0.77 m weit (Anlaufen und
-  Bremsen). Richtig und lehrreich, steht aber nirgends in der API-Beschreibung.
+- `walk(vx=0.5, duration=2)` bringt Spot im Sim 0.87 m weit, bis er steht (nachgemessen
+  11.11.2026 für Kapitel 14: fast 1 s Anlauf, danach Auslaufen; eine frühere Notiz hier
+  nannte 0.77 m). Richtig und lehrreich, steht aber nirgends in der API-Beschreibung.
 - `spot.state.heading` nach `move(turn=90)` ist 89.9. Gut zum Lernen («befohlen
   ist nicht gemessen»), Kapitel 4 baut darauf auf.
 - `move()` geht im Sim auch, während Spot sitzt. Ob der echte Spot dabei

@@ -60,6 +60,7 @@ ZIELARTEN = {
     "zurueck": 1,         # endet höchstens so weit (m) vom eigenen Startplatz
     "mensch_abstand": 1,  # raum=mensch-*: nie näher als so viele Meter am Menschen
     "mensch_nah": 1,      # raum=mensch-*: am Ende höchstens so weit vom Menschen
+    "treppe_richtig": 0,  # spotlab hat keine Treppe falsch herum verweigert
 }
 
 
