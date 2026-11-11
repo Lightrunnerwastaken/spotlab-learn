@@ -1,0 +1,296 @@
+:root {
+  --akzent: #0ea5b0;
+  --akzent-dunkel: #0b7f88;
+  --akzent-hell: #e3f6f7;
+  --text: #24282b;
+  --text-leise: #8a9095;
+  --flaeche: #ffffff;
+  --karte: #eeeeee;
+  --linie: #d4d6d8;
+  --kachel: #dedede;
+  --konsole: #282923;
+  --konsole-text: #f2f2ec;
+  --gut: #2f9e44;
+  --gut-hell: #e6f4e8;
+  --schlecht: #d6453d;
+  --schlecht-hell: #fbe9e8;
+  --hinweis: #fff6db;
+  --hinweis-rand: #e8c55a;
+  --code-bg: #fbfbfb;
+  --editor-zeilen: #f1f1f1;
+  --kw: #7a1fa2;
+  --str: #b85a1b;
+  --com: #2d7a33;
+  --num: #1b6fb8;
+  --fn: #24282b;
+  --schrift: "Open Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono: "Cascadia Mono", Consolas, "DejaVu Sans Mono", monospace;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--flaeche);
+  color: var(--text);
+  font-family: var(--schrift);
+  font-size: 17px;
+  line-height: 1.6;
+}
+a { color: var(--akzent-dunkel); }
+code {
+  font-family: var(--mono);
+  font-size: 0.86em;
+  background: #f0f1f2;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* ------------------------------------------------------------ Leiste */
+.leiste {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 24px; height: 52px;
+  border-bottom: 1px solid var(--linie);
+  position: sticky; top: 0; background: var(--flaeche); z-index: 5;
+}
+.marke {
+  font-weight: 700; color: var(--text); text-decoration: none;
+  display: flex; align-items: center; gap: 10px; letter-spacing: 0.01em;
+}
+.marke-punkt {
+  width: 22px; height: 12px; border-radius: 6px; background: var(--akzent);
+  position: relative;
+}
+.marke-punkt::after {
+  content: ""; position: absolute; right: 3px; top: 3px;
+  width: 6px; height: 6px; border-radius: 50%; background: white;
+}
+#punktestand { color: var(--text-leise); font-size: 15px; }
+#punktestand b { color: var(--akzent-dunkel); }
+.laden { padding: 40px; color: var(--text-leise); }
+
+/* ------------------------------------------------------------ Übersicht */
+.uebersicht { max-width: 1500px; margin: 0 auto; padding: 32px 24px 80px; }
+.einleitung { max-width: 760px; margin: 0 0 18px; }
+.einleitung h1 { font-size: 34px; margin: 0 0 6px; }
+.einleitung p { margin: 0; color: #555b60; }
+.weitermachen {
+  display: inline-block; margin-top: 16px; padding: 10px 20px;
+  background: var(--akzent); color: white; text-decoration: none;
+  border-radius: 3px; font-weight: 600;
+}
+.weitermachen:hover { background: var(--akzent-dunkel); }
+
+.kapitelgitter {
+  display: grid; gap: 22px 18px;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  margin-top: 30px;
+}
+.kapitel {
+  position: relative; margin-top: 70px;
+  background: var(--karte); border-radius: 3px;
+  padding: 92px 20px 22px; min-height: 420px;
+  color: inherit; text-decoration: none; display: block;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+a.kapitel:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+.kapitel .zahl {
+  position: absolute; left: 0; right: 0; top: -62px; text-align: center;
+  font-size: 128px; line-height: 1; font-weight: 800;
+  color: var(--flaeche);
+  -webkit-text-stroke: 3px var(--text);
+  paint-order: stroke fill;
+  font-family: "Bahnschrift", "Arial Rounded MT Bold", var(--schrift);
+  letter-spacing: -0.04em;
+}
+.kapitel.bald { opacity: 0.55; }
+.kapitel.fertig .zahl { -webkit-text-stroke-color: var(--akzent); }
+.kapitel .kennung { font-size: 14px; letter-spacing: 0.04em; color: #4a4f53; text-transform: uppercase; }
+.kapitel h2 { margin: 0 0 22px; color: var(--akzent); font-size: 27px; line-height: 1.2; }
+.kapitel table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.kapitel th {
+  text-align: left; font-weight: 400; font-size: 13px; color: #555;
+  padding: 0 0 8px; border-bottom: 1px solid var(--linie);
+}
+.kapitel th:last-child, .kapitel td:last-child { text-align: right; white-space: nowrap; padding-left: 8px; }
+.kapitel td { padding: 9px 0; border-bottom: 1px solid var(--linie); font-weight: 600; vertical-align: top; }
+.kapitel td.erledigt { color: var(--akzent-dunkel); }
+.kapitel .baldtext { margin-top: 14px; font-size: 14px; color: var(--text-leise); font-style: italic; }
+
+/* ------------------------------------------------------------ Lektion */
+.pfad {
+  max-width: 1100px; margin: 0 auto; padding: 26px 24px 0;
+  font-weight: 700; font-size: 18px;
+}
+.pfad a { color: var(--text); text-decoration: none; }
+.pfad a:hover { color: var(--akzent-dunkel); }
+.pfad .trenner { margin: 0 8px; }
+.lektion { max-width: 900px; margin: 0 auto; padding: 30px 24px 100px; }
+.fortschritt {
+  height: 30px; border: 1px solid #b9bcbf; border-radius: 4px; position: relative;
+  overflow: hidden; margin-bottom: 30px;
+}
+.fortschritt .balken { position: absolute; inset: 0 auto 0 0; background: #ececec; }
+.fortschritt span {
+  position: absolute; left: 8px; top: 3px; font-weight: 700; color: #a3a7aa; font-size: 15px;
+}
+.kapitelname { font-weight: 300; font-size: 25px; color: #a7abae; margin: 0; }
+.lektion h1 { font-size: 26px; margin: 10px 0 26px; }
+.lektion h2 { font-size: 21px; margin: 32px 0 6px; }
+.lektion p, .lektion li { font-weight: 300; font-size: 18.5px; }
+.lektion p { margin: 0 0 22px; }
+.lektion strong { font-weight: 700; }
+.lektion ul, .lektion ol { margin: 0 0 22px; padding-left: 26px; }
+.hinweisbox {
+  background: var(--hinweis); border-left: 4px solid var(--hinweis-rand);
+  padding: 12px 18px; margin: 0 0 24px; border-radius: 0 3px 3px 0;
+}
+.hinweisbox p:last-child { margin-bottom: 0; }
+
+/* ------------------------------------------------------------ Code */
+.codefeld { margin: 8px 0 34px; }
+.editor {
+  position: relative; display: grid; grid-template-columns: 34px 1fr;
+  border: 1px solid #dadcde; background: var(--code-bg);
+  font-family: var(--mono); font-size: 14.5px; line-height: 24px;
+}
+.editor .nummern {
+  background: var(--editor-zeilen); color: #a0a4a8; text-align: right;
+  padding: 8px 6px 8px 0; user-select: none; white-space: pre;
+}
+.editor .flaeche { position: relative; overflow-x: auto; }
+.editor pre, .editor textarea {
+  margin: 0; padding: 8px 10px; font: inherit; line-height: inherit;
+  white-space: pre; tab-size: 4; border: 0; min-height: 100%;
+}
+.editor pre { pointer-events: none; color: var(--text); }
+.editor textarea {
+  position: absolute; inset: 0; width: 100%; height: 100%; resize: none;
+  background: transparent; color: transparent; caret-color: var(--text);
+  outline: none; overflow: hidden;
+}
+.editor textarea::selection { background: rgba(14,165,176,0.25); }
+.editor.nurlesen textarea { display: none; }
+.tok-kw { color: var(--kw); }
+.tok-str { color: var(--str); }
+.tok-com { color: var(--com); font-style: italic; }
+.tok-num { color: var(--num); }
+.tok-fn { color: var(--fn); font-weight: 600; }
+.tok-spot { color: var(--akzent-dunkel); font-weight: 600; }
+
+.knoepfe { display: flex; justify-content: flex-end; gap: 4px; margin: 4px 0 4px; align-items: center; }
+.knoepfe .info { margin-right: auto; font-size: 13px; color: var(--text-leise); }
+.knopf {
+  background: #ececec; border: 0; height: 34px; min-width: 48px; padding: 0 12px;
+  cursor: pointer; font: inherit; font-size: 14px; color: var(--text); border-radius: 2px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+}
+.knopf:hover { background: #dfe0e1; }
+.knopf.ausfuehren { background: var(--akzent); color: white; font-weight: 600; }
+.knopf.ausfuehren:hover { background: var(--akzent-dunkel); }
+.knopf.stopp { background: var(--schlecht); color: white; }
+.knopf svg { width: 15px; height: 15px; fill: currentColor; }
+
+.ergebnis { display: grid; grid-template-columns: 1fr; gap: 0; }
+.ergebnis.mitkarte { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.konsole {
+  background: var(--konsole); color: var(--konsole-text); font-family: var(--mono);
+  font-size: 14px; line-height: 21px; padding: 8px 10px; min-height: 40px; max-height: 340px;
+  overflow: auto; white-space: pre-wrap; word-break: break-word;
+}
+.konsole .prompt { color: #9a9b94; }
+.konsole .fehlerzeile { color: #ff8d84; }
+.konsole .leise { color: #9a9b94; }
+.konsole .startkopf { font-weight: 700; }
+.konsole details summary { color: #9a9b94; cursor: pointer; font-size: 12.5px; }
+.konsole details[open] { color: #c9c9c0; font-size: 12.5px; }
+.fehlerhilfe {
+  background: var(--schlecht-hell); border-left: 4px solid var(--schlecht);
+  padding: 10px 14px; font-size: 15px; margin-top: 0;
+}
+.fehlerhilfe code { background: rgba(255,255,255,0.7); }
+.karte {
+  background: #f6f7f7; border: 1px solid #dadcde; border-left: 0; position: relative;
+  min-height: 200px;
+}
+.karte svg { display: block; width: 100%; height: 100%; }
+.karte { display: flex; flex-direction: column; }
+.karte.breit { border-left: 1px solid #dadcde; border-top: 0; }
+.karte svg { flex: 1; min-height: 0; }
+.karte .legende {
+  padding: 3px 8px; font-size: 12px; color: var(--text-leise); background: #eef0f0;
+  font-family: var(--mono); border-top: 1px solid #dadcde; white-space: pre;
+}
+
+/* ------------------------------------------------------------ Quiz */
+.quiz { margin: 10px 0 36px; }
+.quiz .frage { margin-bottom: 18px; }
+.antwort {
+  display: flex; width: 100%; min-height: 70px; margin-bottom: 10px; border: 0; padding: 0;
+  background: var(--kachel); cursor: pointer; text-align: left; font: inherit;
+  font-weight: 300; font-size: 18px; color: var(--text); align-items: stretch;
+}
+.antwort .buchstabe {
+  width: 48px; flex: none; background: var(--akzent); color: white; font-weight: 700;
+  font-size: 22px; display: flex; align-items: center; justify-content: center;
+}
+.antwort .atext { padding: 18px 16px; display: flex; align-items: center; }
+.antwort:hover:not(:disabled) { background: #d2d2d2; }
+.antwort:disabled { cursor: default; }
+.antwort.falsch { background: var(--schlecht-hell); }
+.antwort.falsch .buchstabe { background: var(--schlecht); }
+.antwort.richtig { background: var(--gut-hell); }
+.antwort.richtig .buchstabe { background: var(--gut); }
+.antwort.gedimmt { opacity: 0.5; }
+.quizfuss { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+.versuche { color: var(--text-leise); font-size: 15px; }
+.punkte { font-size: 26px; font-weight: 700; color: #d9dadb; }
+.punkte.erhalten { color: var(--akzent); }
+.erklaerung {
+  background: var(--akzent-hell); border-left: 4px solid var(--akzent);
+  padding: 12px 16px; margin-top: 10px; font-size: 16.5px;
+}
+.erklaerung.daneben { background: var(--schlecht-hell); border-color: var(--schlecht); }
+
+/* ------------------------------------------------------------ Aufgabe */
+.aufgabe {
+  border: 2px solid var(--akzent); border-radius: 4px; padding: 18px 18px 6px;
+  margin: 10px 0 36px;
+}
+.aufgabe .aufgabenkopf {
+  display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;
+}
+.aufgabe .aufgabenkopf b { color: var(--akzent-dunkel); text-transform: uppercase; font-size: 14px; letter-spacing: 0.06em; }
+.zielliste { list-style: none; padding: 0; margin: 0 0 14px; }
+.zielliste li { font-size: 16px; font-weight: 400; padding: 3px 0 3px 30px; position: relative; }
+.zielliste li::before {
+  content: ""; position: absolute; left: 2px; top: 7px; width: 16px; height: 16px;
+  border: 2px solid #b5b9bc; border-radius: 50%;
+}
+.zielliste li.ok::before { border-color: var(--gut); background: var(--gut); }
+.zielliste li.nein::before { border-color: var(--schlecht); background: var(--schlecht); }
+.zielliste li .detail { display: block; color: var(--text-leise); font-size: 14px; }
+.tipp { background: var(--hinweis); padding: 8px 12px; font-size: 15.5px; margin: 0 0 12px; }
+.geschafft { color: var(--gut); font-weight: 700; margin: 6px 0 12px; }
+.geschafft.frueher { color: var(--text-leise); font-weight: 400; }
+
+/* ------------------------------------------------------------ Navigation */
+.nav { display: flex; justify-content: space-between; margin-top: 50px; }
+.nav a {
+  width: 200px; height: 40px; background: #ececec; color: #a3a7aa; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; text-decoration: none;
+  border-radius: 3px;
+}
+.nav a:hover { background: var(--akzent); color: white; }
+.nav a.leer { visibility: hidden; }
+
+.kursfehler {
+  max-width: 800px; margin: 40px auto; background: var(--schlecht-hell);
+  border-left: 4px solid var(--schlecht); padding: 16px 20px; font-family: var(--mono); font-size: 14px;
+}
+
+@media (max-width: 760px) {
+  .ergebnis.mitkarte { grid-template-columns: 1fr; }
+  .karte { border-left: 1px solid #dadcde; border-top: 0; }
+  .nav a { width: 140px; }
+  .pfad { font-size: 15px; }
+}
