@@ -117,6 +117,19 @@ verhält sich am Gerät anders. Nicht am Gerät nachgeprüft. Der Kurs sagt desh
 was der Übungsraum zeigt («frontleft schaut nach vorne links»), und behauptet nichts
 über Einbauort oder Winkel am echten Spot.
 
+## 4e. Im Übungsraum gibt es keine Menschen, also kein Üben fürs Folgen
+
+Der Folgemodus (`workshop/folgen.py`) ist eines der eindrücklichsten Programme in
+spotlab, aber ohne Roboter lässt er sich nicht ausprobieren: Räume kennen nur Wände,
+Blöcke und feste Tags, nichts bewegt sich. Der Kurs (Kapitel 12, 11.11.2026) lässt
+deshalb einen Menschen mit Tag 9 auf dem Rücken einen festen Weg gehen
+(`kursmotor.MENSCHEN`: bei jeder Tag-Abfrage steht der Tag dort, wo der Mensch gerade
+ist; spotlabs Sichtprüfung entscheidet wie immer). Damit läuft `folgen.folge(spot,
+folgen.tag_finder(9), blick_grad=0)` unverändert im 2D-Sim — und zeigt Ehrliches: in
+der Wohnung hält die Hindernisschranke vor dem Türrahmen («nur 0.6 m frei voraus»),
+und danach ist der Mensch hinter der Wand verschwunden. Vorschlag: bewegte Tags (ein
+Weg je Tag im Raumformat) im Raumeditor, damit man Folgen ohne Roboter üben kann.
+
 ## 5. Kleinigkeiten
 
 - `walk(vx=0.5, duration=2)` bringt Spot im Sim 0.77 m weit (Anlaufen und

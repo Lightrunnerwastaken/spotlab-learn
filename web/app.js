@@ -246,6 +246,32 @@ function karteBauen(raum, startposen) {
   // Je Startplatz ein Spot mit eigener Spurfarbe
   const ebene = s("g");
   welt.append(ebene);
+
+  // raum=mensch-*: ein Mensch mit Tag auf dem Rücken geht einen festen Weg
+  let mensch = null;
+  if (raum.mensch) {
+    mensch = s("g");
+    mensch.append(
+      s("circle", { cx: 0, cy: 0, r: 0.2, fill: "#e8590c", stroke: "#24282b", "stroke-width": 0.03 }),
+      s("circle", { cx: 0.07, cy: 0, r: 0.07, fill: "#f4d9c6" }),          // Kopf, schaut nach vorn
+      s("rect", { x: -0.26, y: -0.09, width: 0.06, height: 0.18, fill: "#24282b" }),   // Tag auf dem Rücken
+    );
+    const name = s("text", { x: 0, y: 0.38, "font-size": 0.13, "font-weight": 700, fill: "#e8590c", "text-anchor": "middle", transform: "scale(1,-1)" });
+    name.textContent = "Tag " + raum.mensch.tag;
+    const huelle = s("g");
+    huelle.append(mensch);
+    const schild = s("g");
+    schild.append(name);
+    welt.append(huelle, schild);
+    mensch.huelle = huelle; mensch.schild = schild;
+  }
+  function menschZeigen(p) {
+    if (!mensch || !p) return;
+    const [x, y, grad] = p;
+    mensch.huelle.setAttribute("transform", `translate(${x},${y}) rotate(${grad})`);
+    mensch.schild.setAttribute("transform", `translate(${x},${y - 0.55})`);
+  }
+  if (raum.mensch) menschZeigen(raum.mensch.lage);
   const legende = el("div", { class: "legende" });
   box.append(svg, legende);
   let roboter = [];
@@ -289,6 +315,7 @@ function karteBauen(raum, startposen) {
       return r;
     });
     roboter.forEach((r) => ebene.append(r.spot));   // Roboter über allen Spuren
+    if (raum.mensch) menschZeigen(raum.mensch.lage);
     legendeZeigen();
   }
   zuruecksetzen(startposen.length ? startposen : [raum.start]);
@@ -296,6 +323,13 @@ function karteBauen(raum, startposen) {
   return {
     box,
     zuruecksetzen,
+    // spur: [[t, x, y, grad], ...] des Menschen; gezeigt wird der letzte Punkt bis t
+    menschBei(spur, t) {
+      if (!spur || !spur.length) return;
+      let p = spur[0];
+      for (const q of spur) { if (q[0] <= t) p = q; else break; }
+      menschZeigen([p[1], p[2], p[3]]);
+    },
     zeigen(i, weg, stoesse) {
       const r = roboter[i];
       if (!r) return;
@@ -701,6 +735,7 @@ function codeAusfuehrbar({ schluessel, code, raum, start, starts = null, ziele =
         function bild() {
           const t = ende ? Infinity : ((performance.now() - t0) / 1000) * tempo;
           laeufe.forEach((l, i) => karte.zeigen(i, l.weg.filter((p) => p[0] <= t), t >= dauer ? l.angestossen : []));
+          karte.menschBei(laeufe[0].mensch, t);
           gruppe.jetzt = Math.min(t, dauer);
           konsoleZeigen(gruppe);
           if (t >= dauer) { fertig(); return; }
@@ -709,7 +744,10 @@ function codeAusfuehrbar({ schluessel, code, raum, start, starts = null, ziele =
         bild();
       });
     }
-    if (karte) laeufe.forEach((l, i) => karte.zeigen(i, l.weg, l.angestossen));
+    if (karte) {
+      laeufe.forEach((l, i) => karte.zeigen(i, l.weg, l.angestossen));
+      karte.menschBei(laeufe[0] && laeufe[0].mensch, Infinity);
+    }
 
     // Trockenlauf: Licht, Ton und Haltung in Echtzeit abspielen
     const sig = (buehne && laeufe[0] && laeufe[0].signale) || [];
@@ -766,6 +804,7 @@ function codeAusfuehrbar({ schluessel, code, raum, start, starts = null, ziele =
 
   if (raum === "trocken") info.textContent = "Trockenlauf · Spot als Zeichnung";
   else if (raum && raum.startsWith("kamera-")) info.textContent = "Kamera-Szene · aufgenommen im 3D-Übungsraum";
+  else if (raum && raum.startsWith("mensch-")) info.textContent = "Simulator · ein Mensch mit Tag 9 geht mit";
   else if (raum) info.textContent = "Simulator · Raum «" + raum + "»";
   return el("div", { class: "codefeld" }, editor.huelle, el("div", { class: "knoepfe" }, info, knopfStart, knopfReset, knopfLaden), ergebnis);
 }

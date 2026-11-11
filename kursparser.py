@@ -58,6 +58,8 @@ ZIELARTEN = {
     "toene": "liste",     # Töne in dieser Reihenfolge: toene C5 E5 G5
     "haltung": 2,         # irgendein pose() mit diesem Wert: haltung pitch 15
     "zurueck": 1,         # endet höchstens so weit (m) vom eigenen Startplatz
+    "mensch_abstand": 1,  # raum=mensch-*: nie näher als so viele Meter am Menschen
+    "mensch_nah": 1,      # raum=mensch-*: am Ende höchstens so weit vom Menschen
 }
 
 

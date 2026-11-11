@@ -4,8 +4,16 @@
 Repository: github.com/Lightrunnerwastaken/spotlab-learn (öffentlich).
 
 Fertig:
-- Kapitel 1–11 geschrieben (… Licht/Ton/Haltung, Kameras und Tiefe, Karten und
-  Navigation). Kapitel 12–14 als Vorschau (`bald: ja`).
+- Kapitel 1–12 geschrieben (… Kameras und Tiefe, Karten und Navigation, Einem
+  Menschen folgen). Kapitel 13–14 als Vorschau (`bald: ja`).
+- Kapitel 12 (11.11. abends): `raum=mensch-<name>` = ein Mensch mit Tag 9 auf dem
+  Rücken geht einen festen Weg (`kursmotor.MENSCHEN`, Tag wird bei jeder Abfrage an
+  seine Stelle geschoben; spotlab unverändert). Die Seite zeichnet ihn mit (Ergebnis
+  `mensch`). Inhalt: Finder/Regler, Drehregler (K = 0.3 bleibt unter der Drehschwelle
+  hängen, K = 10 pendelt), Abstand halten (nie rückwärts), Wohnung: einfacher Regler
+  verliert den Menschen an der Tür, Merkpunkt geradewegs stösst an, Aufgabe «Spur
+  folgen» (drei Starts, Ziele `mensch_abstand`, `mensch_nah`); spotlabs `folgen.befehl`
+  und `folgen.folge` laufen im Browser. Befund 4e.
 - Kapitel 10 (11.11. abends): `raum=kamera-<szene>` = Spot steht im 2D-Raum, die Kameras
   liefern ImageResponse-Protobufs, die `tools/aufnahmen_bauen.py` vorher im 3D-Übungsraum
   (MuJoCo) aufgenommen hat (`motor/kursaufnahmen/*.bin.gz`, je 0.2 MB, im Zip). spotlabs
@@ -37,11 +45,11 @@ Fertig:
   Thread, Attrappen für grpc/jwt/cryptography/urllib3/requests/keyring/pynmea2.
   Gegen den alten Echtzeit-Server verglichen: gleiche Wege, gleiche Zeiten.
 - Aufgaben mit mehreren Startplätzen (`starts=`), Ziel `ende_in`, Hinweis beim Anstossen.
-- `tests/kurs_pruefen.py` nimmt denselben Motor: 100 von 100 in Ordnung (12 s).
+- `tests/kurs_pruefen.py` nimmt denselben Motor: 116 von 116 in Ordnung (17 s).
 - Im Browser geprüft: Beispiel aus Kapitel 3, Türaufgabe aus Kapitel 6 (vier Starts,
   alle Ziele erfüllt). Erster Start lädt Python etwa 20 s, danach Sekunden.
 
 Offen:
-- Kapitel 12–14 (Folgen, Treppen, echter Spot). GraphNav selbst ist im Kurs nicht
+- Kapitel 13–14 (Treppen, echter Spot). GraphNav selbst ist im Kurs nicht
   ausführbar (nur am Gerät); Kamerabilder sind gerendert, nicht vom Gerät.
 - Der Autor hat den Kurs noch nicht selbst durchgespielt.

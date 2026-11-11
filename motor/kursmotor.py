@@ -215,6 +215,7 @@ def installieren():
     kursraeume_einhaengen()
     trockenlauf_wie_am_geraet()
     kamera_einhaengen()
+    mensch_einhaengen()
 
 
 # ================================================================ Kamera-Szenen
@@ -296,6 +297,112 @@ def kamera_einhaengen():
         return befehl
 
     motion.move, motion.walk = gesperrt(motion.move), gesperrt(motion.walk)
+
+
+# ================================================================ Ein Mensch geht mit
+#
+# raum=mensch-<name>: im 2D-Übungsraum geht ein Mensch einen festen Weg und trägt einen
+# AprilTag auf dem Rücken. spotlab kennt keine bewegten Dinge; der Kurs schiebt dafür bei
+# jeder Tag-Abfrage den Tag an die Stelle, an der der Mensch gerade ist (virtuelle Uhr
+# seit connect), und spotlabs eigene Sichtprüfung entscheidet wie immer, ob Spot ihn
+# sieht (bis 3 m, freie Sichtlinie, rundum). Der Mensch ist kein Hindernis: Spot kann
+# nicht an ihn stossen, das Ziel `mensch_abstand` prüft den Abstand stattdessen.
+#
+# Weg: Liste [x, y, pause_s] — er geht mit `tempo` von Punkt zu Punkt und wartet an
+# jedem Punkt pause_s. Am ersten Punkt steht er `pause_s` lang, bevor er losgeht.
+
+MENSCHEN = {
+    "mensch-steht": {
+        "titel": "Ein Mensch mit Tag 9 auf dem Rücken steht im Raum",
+        "raum": "leer", "start": "1,1.2,0", "tag": 9, "tempo": 0.4,
+        "weg": [[2.6, 2.8, 0]],
+    },
+    "mensch-quer": {
+        "titel": "Der Mensch geht vor Spot hin und her",
+        "raum": "leer", "start": "1.2,2,0", "tag": 9, "tempo": 0.4,
+        "weg": [[3.4, 0.7, 2], [3.4, 3.3, 1], [3.4, 1.6, 0]],
+    },
+    "mensch-geht": {
+        "titel": "Der Mensch geht weg, bleibt stehen und kommt zurück",
+        "raum": "leer", "start": "0.7,2,0", "tag": 9, "tempo": 0.4,
+        "weg": [[2.5, 2, 3], [4.3, 2.4, 3], [4.3, 3.3, 2], [2.4, 3.0, 0]],
+    },
+    "mensch-wohnung": {
+        "titel": "Der Mensch geht durch zwei Türen in ein anderes Zimmer",
+        "raum": "wohnung", "start": "2,0.8,90", "tag": 9, "tempo": 0.4,
+        "weg": [[2.2, 2.7, 4], [2.2, 3.6, 0], [3.7, 3.6, 0], [5.9, 3.5, 0],
+                [5.9, 1.6, 0], [7.0, 1.3, 0]],
+    },
+}
+MENSCH = None              # Plan während eines Laufs
+MENSCH_T0 = 0.0            # virtuelle Zeit beim connect
+
+
+def mensch_bei(plan: dict, t: float) -> tuple:
+    """(x, y, blick_grad) des Menschen t Sekunden nach connect."""
+    weg, tempo = plan["weg"], plan["tempo"]
+    x, y = weg[0][0], weg[0][1]
+    blick = 180.0
+    t -= weg[0][2]
+    if len(weg) > 1:
+        blick = math.degrees(math.atan2(weg[1][1] - y, weg[1][0] - x))
+    if t <= 0:
+        return x, y, blick
+    for (x1, y1, _), (x2, y2, pause) in zip(weg, weg[1:]):
+        laenge = math.hypot(x2 - x1, y2 - y1)
+        blick = math.degrees(math.atan2(y2 - y1, x2 - x1))
+        dauer = laenge / tempo
+        if t < dauer:
+            a = t / dauer
+            return x1 + a * (x2 - x1), y1 + a * (y2 - y1), blick
+        t -= dauer + pause
+        x, y = x2, y2
+        if t < 0:
+            return x, y, blick
+    return x, y, blick
+
+
+def mensch_einhaengen():
+    import dataclasses
+
+    from spotlab.backends import sim
+    from spotlab.welt.raum import RaumTag
+
+    cls = sim.SimBackend
+    if getattr(cls.world_objects, "_kurs", False):
+        return
+    init_vorher, objekte_vorher = cls.__init__, cls.world_objects
+
+    def __init__(self, *args, **kwargs):
+        global MENSCH_T0
+        MENSCH_T0 = UHR.v
+        init_vorher(self, *args, **kwargs)
+
+    def world_objects(self, kinds=None):
+        raum = self._raum
+        if not MENSCH or raum is None:
+            return objekte_vorher(self, kinds)
+        x, y, blick = mensch_bei(MENSCH, UHR.v - MENSCH_T0)
+        # Der Tag hängt auf dem Rücken, schaut also entgegen der Gehrichtung.
+        tag = RaumTag(id=MENSCH["tag"], x=x, y=y, grad=(blick + 180) % 360)
+        self._raum = dataclasses.replace(raum, tags=tuple(raum.tags) + (tag,))
+        try:
+            return objekte_vorher(self, kinds)
+        finally:
+            self._raum = raum
+
+    world_objects._kurs = True
+    cls.__init__, cls.world_objects = __init__, world_objects
+
+
+def _mensch_spur(plan: dict, dauer: float) -> list:
+    """[[t, x, y, blick], ...] alle 0.2 s, dieselbe Zeitbasis wie der Weg."""
+    spur, t = [], 0.0
+    while t <= dauer + 0.2:
+        x, y, b = mensch_bei(plan, t)
+        spur.append([round(t, 2), round(x, 3), round(y, 3), round(b, 1)])
+        t += 0.2
+    return spur
 
 
 def _bilder(ordner: Path, hoechstens: int = 8, max_bytes: int = 2_000_000) -> list:
@@ -384,12 +491,17 @@ def lauf(code: str, raum: str = "leer", start: str = "", grenze_s: float = GRENZ
     # raum=trocken: der Trockenlauf von spotlab (echte Protobufs, nichts bewegt sich).
     # Er kann, was der 2D-Sim nicht kann: lights, beep, pose. Die Seite zeigt dann
     # statt der Karte eine Spot-Zeichnung, die die Signale abspielt.
-    global AUFNAHME
+    global AUFNAHME, MENSCH
     AUFNAHME = None
+    MENSCH = None
     if raum and raum.startswith("kamera-"):
         szene = szenen()[raum]
         AUFNAHME = szene_lesen(raum)
         raum, start = szene["raum"], szene["start"]
+    elif raum in MENSCHEN:
+        MENSCH = MENSCHEN[raum]
+        raum, start = MENSCH["raum"], start or MENSCH["start"]
+    plan = MENSCH
     os.environ["SPOTLAB_BACKEND"] = "dryrun" if raum == "trocken" else "sim"
     if raum and raum not in ("keiner", "trocken"):
         os.environ["SPOTLAB_RAUM"] = raum
@@ -423,6 +535,7 @@ def lauf(code: str, raum: str = "leer", start: str = "", grenze_s: float = GRENZ
     finally:
         UHR.grenze = None
         AUFNAHME = None
+        MENSCH = None
         _ABTASTER.clear()
         os.chdir(vorher_ordner)
         sys.argv = vorher_argv
@@ -449,6 +562,7 @@ def lauf(code: str, raum: str = "leer", start: str = "", grenze_s: float = GRENZ
         "kommandos": [e.get("daten", {}).get("name") for e in ereignisse if e.get("art") == "kommando"],
         "signale": _signale(ereignisse),
         "bilder": _bilder(ordner),
+        "mensch": _mensch_spur(plan, max([p[0] for p in weg], default=0.0)) if plan else None,
         "dauer": round(UHR.v - beginn, 1),
     }
 
@@ -617,6 +731,30 @@ def pruefen(ziele: list, e: dict) -> list:
                 ok = d <= w[0] and any(math.hypot(p[1] - weg[0][1], p[2] - weg[0][2]) > 1.0 for p in weg)
                 detail = (f"Er endet {d:.2f} m vom Start entfernt." if d > w[0]
                           else "" if ok else "Er war nie weiter als 1 m vom Start weg.")
+        elif art in ("mensch_abstand", "mensch_nah"):
+            spur = e.get("mensch") or []
+
+            def abstand(p):
+                if not spur:
+                    return float("inf")
+                m = spur[min(len(spur) - 1, max(0, round(p[0] / 0.2)))]
+                return math.hypot(p[1] - m[1], p[2] - m[2])
+
+            if art == "mensch_abstand":
+                text = f"Spot kommt dem Menschen nie näher als {w[0]:g} m"
+                if not weg:
+                    ok, detail = False, "Kein Zustand aufgezeichnet."
+                else:
+                    am_naechsten = min(weg, key=abstand)
+                    d = abstand(am_naechsten)
+                    ok, detail = d >= w[0], f"Am nächsten war er {d:.2f} m (nach {am_naechsten[0]:.0f} s)."
+            else:
+                text = f"Am Ende ist Spot höchstens {w[0]:g} m vom Menschen entfernt"
+                if lage is None:
+                    ok, detail = False, "Spot hat sich nicht bewegt."
+                else:
+                    d = abstand(lage)
+                    ok, detail = d <= w[0], f"Am Ende sind es {d:.2f} m."
         elif art == "licht":
             folge = [farbname(s.get("color")) for s in e.get("signale", []) if s["art"] == "lights"]
             text = "Spot leuchtet nacheinander: " + ", ".join(FARBEN_DEUTSCH.get(f, f) for f in w)
@@ -658,13 +796,15 @@ def raum_als_json(name: str) -> dict:
     kursraeume_einhaengen()
     from spotlab.welt.raum import raum_laden
 
-    szene = szenen().get(name)
+    szene = szenen().get(name) or MENSCHEN.get(name)
     r = raum_laden(szene["raum"] if szene else name)
     start = [float(v) for v in szene["start"].split(",")] if szene else list(r.start)
+    mensch = MENSCHEN.get(name)
     return {
         "name": r.name,
         "beschreibung": szene["titel"] if szene else r.beschreibung,
-        "szene": bool(szene),
+        "szene": bool(szene) and not mensch,
+        "mensch": {"tag": mensch["tag"], "lage": list(mensch_bei(mensch, 0.0))} if mensch else None,
         "groesse": list(r.groesse) if r.groesse else None,
         "start": start,
         "waende": [[w.x1, w.y1, w.x2, w.y2] for w in r.waende],

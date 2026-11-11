@@ -53,6 +53,52 @@ ERKUNDEN = (
 
 # Aussagen aus dem Text: (Kapitel, Beschreibung, Raum, Start, Code, erwarteter Status oder "*",
 #                         Text in der Ausgabe, muss anstossen)
+def _kap(nummer, abschnitt, block):
+    """Code eines Blocks aus dem Kurstext selbst."""
+    k = [k for k in kursparser.kurs_lesen()["kapitel"] if k["nummer"] == nummer][0]
+    return k["abschnitte"][abschnitt]["bloecke"][block]["code"]
+
+
+# Kapitel 12: der Dreh-Regler mit Platzhalter K_WERT, Auswertung der Peilungen am Ende.
+DREHEN = (
+    "import math, time\n" + KOPF +
+    "    p = []\n"
+    "    for takt in range(100):\n"
+    "        tags = spot.tags(id=9)\n"
+    "        if tags:\n"
+    "            p.append(tags[0].bearing)\n"
+    "            spot.walk(wz=math.radians(K_WERT * tags[0].bearing), duration=1.0, stop=False)\n"
+    "        else:\n"
+    "            spot.stop()\n"
+    "        time.sleep(0.2)\n"
+    "    wechsel = sum(1 for a, b in zip(p[5:25], p[6:26]) if a * b < 0)\n"
+    "    print('MAX', max(abs(x) for x in p[10:]) < 10, 'ENDE', round(p[-1]), '', 'WECHSEL', wechsel >= 6)\n"
+)
+
+# Kapitel 12: geradewegs zum Merkpunkt (zuletzt gesehener Ort), ohne Spur.
+MERKPUNKT = (
+    "import math, time\n"
+    "merkpunkt = None\n" + KOPF +
+    "    for takt in range(200):\n"
+    "        z = spot.state\n"
+    "        tags = spot.tags(id=9)\n"
+    "        if tags:\n"
+    "            m = tags[0]\n"
+    "            r = math.radians(z.heading + m.bearing)\n"
+    "            merkpunkt = (z.x + m.distance * math.cos(r), z.y + m.distance * math.sin(r))\n"
+    "        if merkpunkt is None:\n"
+    "            spot.stop(); time.sleep(0.2); continue\n"
+    "        dx, dy = merkpunkt[0] - z.x, merkpunkt[1] - z.y\n"
+    "        abstand = math.hypot(dx, dy)\n"
+    "        peilung = (math.degrees(math.atan2(dy, dx)) - z.heading + 180) % 360 - 180\n"
+    "        wunsch = 1.6 if tags else 0.0\n"
+    "        tempo = 0.0\n"
+    "        if abs(peilung) < 40 and abstand > wunsch + 0.1:\n"
+    "            tempo = min(0.5, 0.6 * (abstand - wunsch) + 0.1)\n"
+    "        spot.walk(vx=tempo, wz=math.radians(max(-45, min(45, 1.2 * peilung))), duration=1.0, stop=False)\n"
+    "        time.sleep(0.2)\n"
+)
+
 BEHAUPTUNGEN = [
     ("02", "Quiz: Befehl nach dem with-Block scheitert", "leer", "",
      "from spotlab import connect\nwith connect() as spot:\n    spot.power_on()\nspot.stand()\n",
@@ -182,6 +228,27 @@ BEHAUPTUNGEN = [
     ("11", "Im Übungsraum gibt es kein GraphNav", "leer", "",
      "from spotlab import connect\nwith connect() as spot:\n    print('NAV', spot.supports('navigate_to'))\n",
      "fertig", "NAV False", False),
+    ("12", "K = 1.2: nach 2 s bleibt die Peilung unter 10°", "mensch-quer", "",
+     DREHEN.replace("K_WERT", "1.2"), "fertig", "MAX True", False),
+    ("12", "Quiz: K = 0.3 bleibt am Ende bei −18° stehen", "mensch-quer", "",
+     DREHEN.replace("K_WERT", "0.3"), "fertig", "ENDE -18 ", False),
+    ("12", "Quiz: K = 10 pendelt (Peilung wechselt laufend das Vorzeichen)", "mensch-quer", "",
+     DREHEN.replace("K_WERT", "10"), "fertig", "WECHSEL True", False),
+    ("12", "Abstand: der Mensch kommt am Ende bis auf etwa 0.8 m heran", "mensch-geht", "",
+     _kap(12, 2, 1).replace("        m = tags[0]\n", "        m = tags[0]\n        nah.append(m.distance)\n")
+     .replace("WUNSCH = 1.6\n", "WUNSCH = 1.6\nnah = []\n") + "print('NAH', 0.7 < min(nah) < 0.9)\n",
+     "fertig", "NAH True", False),
+    ("12", "Wohnung: der einfache Regler verliert den Menschen an der Tür", "mensch-wohnung", "",
+     _kap(12, 3, 1) + "print('WEG', (200 - zuletzt) * 0.2 > 20)\n", "fertig", "WEG True", False),
+    ("12", "Merkpunkt geradewegs: Spot stösst an den Türrahmen", "mensch-wohnung", "",
+     MERKPUNKT, "*", "", True),
+    ("12", "spotlabs Regler: 60° nur drehen, 3 m schneller als 0.5 m/s", "keiner", "",
+     _kap(12, 4, 1), "fertig",
+     "Peilung  60°, Abstand 2.5 m  ->  Tempo 0.00 m/s, Drehen 0.79 rad/s\n"
+     "Peilung   0°, Abstand 1.2 m  ->  Tempo 0.00 m/s, Drehen 0.00 rad/s\n"
+     "Peilung   2°, Abstand 3.0 m  ->  Tempo 0.75 m/s, Drehen 0.00 rad/s", False),
+    ("12", "spotlabs Folgemodus hält vor der Tür: frei voraus", "mensch-wohnung", "",
+     _kap(12, 4, 3), "fertig", "frei voraus", False),
 ] + [
     ("08", f"Aufgabe: von {s} aus ist Tag 5 nicht sofort zu sehen", "wohnung", s,
      KOPF + "    print('ANFANG', len(spot.tags(id=5)))\n",
