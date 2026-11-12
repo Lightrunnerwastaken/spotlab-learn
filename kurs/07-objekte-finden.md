@@ -7,7 +7,7 @@ titel: Objekte finden
 
 Ein **AprilTag** ist ein ausgedrucktes Quadrat mit einem schwarz-weissen Muster, ähnlich wie ein QR-Code. Jedes Muster steht für eine Nummer. Spots Kameras erkennen solche Tags und sagen dir, **welcher** es ist und **wo** er hängt. In der Schule kannst du so ein Ziel markieren: eine Tür, eine Ladestation, einen Schrank.
 
-Im Raum «Möbliert» hängen zwei Tags: Tag 1 an der rechten Wand, Tag 2 an der oberen. Spot steht in der Mitte des Zimmers.
+Im Raum «Möbliert» hängen zwei Tags: Tag 1 an der rechten Wand, Tag 2 an der oberen. Spot steht ungefähr in der Mitte des Zimmers.
 
 ```spot raum=moebliert start=3.5,2.7,0
 from spotlab import connect
@@ -32,7 +32,7 @@ Die Liste ist sortiert: **der nächste Tag kommt zuerst.** Sieht Spot gar keinen
 Suchst du einen bestimmten Tag, gibst du die Nummer mit: `spot.tags(id=1)` liefert nur Tag 1 (oder eine leere Liste).
 
 ```quiz punkte=2
-? Spot soll zu Tag 1 gehen. Ein Schüler schreibt diesen Anfang. Was ist daran falsch, wenn Spot in der Mitte von «Möbliert» steht?
+? Spot soll zu Tag 1 gehen. Ein Schüler schreibt diesen Anfang. Was ist daran falsch, wenn Spot ungefähr in der Mitte von «Möbliert» steht?
 | tag = spot.tags()[0]
 | spot.move(turn=tag.bearing)
 A) Nichts, `[0]` ist immer der Tag mit der kleinsten Nummer.

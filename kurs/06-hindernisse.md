@@ -143,7 +143,7 @@ with connect() as spot:
     print("geschafft")
 ```
 
-Spot stösst an die Ecke der Kiste (roter Kreis auf der Karte). Der Grund: `look` prüft erst ab `start=0.6`. Die Ecke liegt näher, schräg vor ihm, genau im Stück, das nicht geprüft wird. Spots halbe Breite (etwa 0.27 m) und der Sicherheitsabstand (0.3 m) liegen zu nahe beieinander.
+Spot stösst an die Ecke der Kiste (roter Kreis auf der Karte). Der Grund: `look` prüft erst ab `start=0.6`. Die Ecke liegt näher, schräg vor ihm, genau im Stück, das nicht geprüft wird. Ein etwas grösserer Sicherheitsabstand (`margin`) hilft: Dann meldet `look` die Ecke schon, bevor Spot so nahe ist.
 
 Jetzt dasselbe mit einem grösseren Sicherheitsabstand:
 
@@ -174,7 +174,7 @@ D) Weil der Sicherheitsabstand am echten Spot keine Wirkung hat.
 
 # Aufgabe: Durch die Tür
 
-Spot soll ins rechte Zimmer finden. Er kennt den Plan nicht, er weiss nur: **Das andere Zimmer liegt im Osten** (Blick 0°). Drüben hängt ein AprilTag. Sobald Spot ihn sieht (`spot.tags()` ist nicht leer), ist er angekommen.
+Spot soll ins rechte Zimmer finden. Er kennt den Plan nicht, er weiss nur: **Das andere Zimmer liegt im Osten** (Blick 0°). Drüben hängt ein AprilTag. Sobald Spot ihn sieht, ist er angekommen. Dafür gibt es `spot.tags()`: Es liefert eine Liste der AprilTags, die Spot gerade sieht (mehr dazu in Kapitel 7). Ist die Liste nicht leer, ist der Tag in Sicht.
 
 Diesmal läuft dein Programm **von vier Startplätzen gleichzeitig**. Ein fest einprogrammierter Weg funktioniert deshalb nicht — dein Programm muss wirklich hinschauen.
 

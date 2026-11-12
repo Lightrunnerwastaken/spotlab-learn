@@ -99,11 +99,11 @@ Der zweite Teil des Reglers sorgt dafür, dass Spot hinterhergeht, aber nicht zu
 
 | Tempo = 0.6 × (Abstand − 1.6)
 
-Dazu kommen drei Regeln, die spotlab genau so hat:
+Dazu kommen drei Regeln. Die ersten beiden hat spotlab genau so, den Deckel in ähnlicher Form (mehr dazu weiter unten):
 
 - **Nie rückwärts.** Kommt der Mensch näher, bleibt Spot stehen. Beim Folgen schaut Spot nach vorn, und hinter ihm prüft niemand, ob dort Platz ist.
 - **Erst drehen, dann gehen.** Steht der Mensch mehr als 40° zur Seite, dreht Spot nur und geht nicht.
-- **Ein Tempodeckel.** Höchstens 0.5 m/s, egal wie weit der Mensch weg ist.
+- **Ein Tempodeckel.** In deinem Regler höchstens 0.5 m/s, egal wie weit der Mensch weg ist.
 
 Hier geht der Mensch weg, bleibt stehen, biegt ab und kommt am Ende auf Spot zu:
 
@@ -288,7 +288,7 @@ with spotlab.connect() as spot:
 Was dabei passiert:
 
 - **Finder:** `koerper_finder()` sucht in den Bildern der Frontkameras nach einem Menschen und misst mit den Tiefenkameras, wie weit er weg ist. Er sucht den Körper, nicht das Gesicht: Auf 1.5 m Abstand reicht das Bild nur bis etwa 1.2 m Höhe, weil die Kameras nach unten schauen. Von einem stehenden Menschen ist dann der Kopf gar nicht im Bild.
-- **Licht:** Die LEDs am Kopf zeigen, was Spot gerade denkt: **gelb** heisst «ich suche», **blau** heisst «ich folge dir», **rot** heisst «per Handzeichen angehalten».
+- **Licht:** Die LEDs am Körper zeigen, was Spot gerade denkt: **gelb** heisst «ich suche», **blau** heisst «ich folge dir», **rot** heisst «per Handzeichen angehalten».
 - **Handzeichen:** Die offene Hand (Finger nach oben, Handfläche zu Spot) heisst **Halt**, der Daumen hoch heisst **Weiter**. Halte das Zeichen vor der Brust, ein bis zwei Meter vor Spot, etwa zwei Sekunden lang.
 - **Schranken:** nie näher als 1 m, nie rückwärts, ohne Ziel sofort stehen, vorwärts nur, wenn vorne frei ist und nichts über dem Weg hängt (zum Beispiel eine Tischplatte).
 

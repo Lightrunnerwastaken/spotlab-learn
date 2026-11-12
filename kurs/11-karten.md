@@ -67,7 +67,7 @@ with connect() as spot:
         print(zeile)
 ```
 
-Vergleiche die Karte in der Ausgabe mit dem Grundriss. Nach 50 Schritten sind alle Wände da, beide Türen, der Schrank, das Sofa und die Kiste. Und das alles nur aus dem, was Spot unterwegs gesehen hat.
+Vergleiche die Karte in der Ausgabe mit dem Grundriss. Nach 50 Schritten sind fast alle Wände da (an der rechten Aussenwand fehlen noch Stücke), beide Türen, der Schrank, das Sofa und die Kiste. Und das alles nur aus dem, was Spot unterwegs gesehen hat.
 
 Warum steht im Gitter eine Distanz und nicht einfach «Wand ja/nein»? `distance_at(x, y)` sagt, wie weit es von diesem Punkt bis zum nächsten Hindernis ist. Ist das weniger als eine halbe Zelle, liegt das Hindernis im Feld selbst, also `"#"`.
 
@@ -105,7 +105,7 @@ A) Nichts, das ist die beste Lösung.
 B) `gehe_zu` funktioniert nur für Wege unter 1 m.
 C)* Die gerade Linie zum Start kann durch Wände führen. Spot weiss nur von seinen Wegpunkten sicher, dass man dort gehen kann.
 D) Spot weiss nicht mehr, wo der Start liegt.
-! Vom Ort, an dem Spot Tag 5 sieht, führt die gerade Linie zum Start mitten durch die Wand zwischen den Zimmern (im Kurs nachgeprüft: Spot stösst an). Der Weg über die Wegpunkte ist länger, aber jeder Abschnitt davon ist schon einmal gegangen worden. Genau so plant Spots eigene Navigation: Sie fährt nur auf Wegen, die bei der Aufnahme gegangen wurden.
+! Vom Ort, an dem Spot Tag 5 sieht, kann die gerade Linie zum Start mitten durch eine Wand führen (im Kurs nachgeprüft: vom Startplatz bei x = 1, y = 1 aus stösst Spot an, von anderen Startplätzen aus ist die Linie zufällig frei). Der Weg über die Wegpunkte ist länger, aber jeder Abschnitt davon ist schon einmal gegangen worden. Genau so plant Spots eigene Navigation: Sie fährt nur auf Wegen, die bei der Aufnahme gegangen wurden.
 ```
 
 # Den Weg zurück

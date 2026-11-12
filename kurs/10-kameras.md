@@ -64,7 +64,7 @@ from spotlab import connect
 with connect() as spot:
     t = spot.depth("frontleft")
     print("Form:", t.meters.shape)
-    print("Mitte:", t.distance_at(212, 120), "m")
+    print("Mitte:", round(t.distance_at(212, 120), 2), "m")
     print("gültig:", round(t.valid.mean() * 100), "%")
     print("nächster Punkt:", round(t.meters[t.valid].min(), 2), "m")
 
@@ -134,10 +134,10 @@ Das Ergebnis, 1.3 m, passt zur Karte: Spot steht bei x = 1.2, die Tischkante lie
 ```quiz punkte=2
 ? Was gibt das Programm aus, wenn du die Zeile `ueber_boden = punkte[punkte[:, 2] > -0.4]` weglässt (und mit allen Punkten weiterrechnest)?
 A) Dasselbe, 1.30 m: der Boden ist ja kein Hindernis.
-B)* Etwa 0.6 m: Der nächste Punkt ist dann der Boden direkt vor Spot.
+B)* Etwa 0.7 m: Der nächste Punkt ist dann der Boden direkt vor Spot.
 C) Eine Fehlermeldung, weil die Punktwolke leer ist.
 D) Einen grösseren Wert, weil mehr Punkte den Durchschnitt verschieben.
-! Die Kameras schauen schräg nach unten, und die meisten Punkte liegen **auf dem Boden**, die nächsten nur gut einen halben Meter vor Spot. Ohne den Höhenfilter hielte das Programm den Boden für ein Hindernis. Darum trennt man zuerst Boden und Nicht-Boden. Spot selbst macht dasselbe, wenn er aus den Tiefenbildern sein Hindernisgitter baut.
+! Die Kameras schauen schräg nach unten, und die meisten Punkte liegen **auf dem Boden**, die nächsten nur etwa 0.7 m vor Spots Mitte. Ohne den Höhenfilter hielte das Programm den Boden für ein Hindernis. Darum trennt man zuerst Boden und Nicht-Boden. Spot selbst macht dasselbe, wenn er aus den Tiefenbildern sein Hindernisgitter baut.
 ```
 
 # Bilder auswerten

@@ -192,10 +192,10 @@ BEHAUPTUNGEN = [
     ("09", "Das universelle Programm (Aufgabe 2) läuft auch im Trockenlauf durch", "trocken", "",
      (WURZEL / "tests" / "loesungen" / "09-licht-ton-haltung-3-9.py").read_text(encoding="utf-8"),
      "fertig", "Begrüssung fertig", False),
-    ("10", "Quiz: ohne Bodenfilter ist der Boden das nächste Hindernis (~0.6 m)", "kamera-tisch", "",
+    ("10", "Quiz: ohne Bodenfilter ist der Boden das nächste Hindernis (~0.7 m)", "kamera-tisch", "",
      "import numpy as np\nfrom spotlab import connect\nwith connect() as spot:\n"
      "    p = np.vstack([spot.point_cloud(n, frame='body').points for n in ('frontleft', 'frontright')])\n"
-     "    g = p[np.abs(p[:, 1]) < 0.35]\n    print('BODEN', 0.5 < g[:, 0].min() < 0.7)\n",
+     "    g = p[np.abs(p[:, 1]) < 0.35]\n    print('BODEN', 0.6 < g[:, 0].min() < 0.8)\n",
      "fertig", "BODEN True", False),
     ("10", "frontleft schaut nach links, frontright nach rechts", "kamera-tisch", "",
      "from spotlab import connect\nwith connect() as spot:\n"

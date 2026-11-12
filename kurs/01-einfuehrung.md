@@ -74,7 +74,7 @@ Spot wiegt etwa 32 kg und läuft bis zu 1.6 m pro Sekunde. Ein Programmfehler ka
 3. **Erst im Simulator, dann echt.** Jedes Programm läuft zuerst hier.
 4. **Klein anfangen.** Am echten Spot zuerst kurze Strecken und langsame Geschwindigkeiten.
 
-> spotlab hilft dir dabei: Wer nichts einstellt, fährt nie den echten Spot, sondern immer den Simulator. Und dieser Kurs kann den echten Spot gar nicht erreichen, auch wenn du es im Code versuchst.
+> spotlab hilft dir dabei: Wer nichts einstellt, fährt nie den echten Spot, sondern immer einen Übungsraum am Computer. Und dieser Kurs kann den echten Spot gar nicht erreichen, auch wenn du es im Code versuchst.
 
 ```quiz punkte=1
 ? Am echten Spot startest du ein neues Programm. Spot läuft los, aber anders als gedacht: er geht direkt auf ein Pult zu. Was tust du zuerst?

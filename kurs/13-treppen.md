@@ -33,7 +33,7 @@ with connect() as spot:
 `spot.state.z` ist die Höhe von Spots Körper. Unten sind es 0.51 m, denn so hoch steht Spot über dem Boden. Steigt `z`, ist Spot nach oben gekommen.
 
 ```quiz punkte=2
-? Spot steht unten vor der Treppe und schaut nach links weg. `stairs()` meldet `axis_bearing = -90`. Was musst du tun, damit Spot die Treppe hinaufschaut?
+? Spot steht unten neben der Treppe und schaut nicht in ihre Richtung. `stairs()` meldet `axis_bearing = -90`. Was musst du tun, damit Spot die Treppe hinaufschaut?
 A) `spot.move(turn=90)`
 B)* `spot.move(turn=-90)`
 C) `spot.move(turn=180)`

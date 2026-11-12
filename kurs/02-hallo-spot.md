@@ -56,7 +56,7 @@ A) Zeile 2, weil der Doppelpunkt falsch ist
 B) Zeile 3, weil `power_on` falsch geschrieben ist
 C)* Zeile 4, weil `spot.stand()` nicht eingerückt ist und damit ausserhalb des with-Blocks steht
 D) Es gibt keinen Fehler
-! Zeile 4 ist nicht eingerückt. Für Python ist der `with`-Block nach Zeile 3 schon fertig, die Verbindung ist geschlossen. Spot kann dann keine Befehle mehr annehmen. Probiere es im Codefeld oben aus: nimm bei einer Zeile die Leerzeichen am Anfang weg und schau dir die Meldung an.
+! Zeile 4 ist nicht eingerückt. Für Python ist der `with`-Block nach Zeile 3 schon fertig. Am Ende des Blocks schaltet spotlab die Motoren aus. Darum meldet Zeile 4 «Die Motoren sind aus — rufe zuerst `spot.power_on()` auf», obwohl `power_on()` im Programm steht: Es kam zu früh, nicht zu wenig. Probiere es im Codefeld oben aus: nimm bei einer Zeile die Leerzeichen am Anfang weg und schau dir die Meldung an.
 ```
 
 # Motoren und Haltung
@@ -115,7 +115,7 @@ Jetzt schreibst du selbst ein Programm. Unten steht ein Anfang. Ergänze es so, 
 ziel: aufgerufen stand
 ziel: ausgabe Hallo, ich bin Spot
 ziel: sitzt
-tipp: Spot muss zuerst die Motoren einschalten, dann aufstehen. Am Ende soll er sitzen: dafür gibt es `spot.sit()`.
+tipp: Die Motoren sind schon an (`power_on()` steht im Startcode). Jetzt muss Spot aufstehen. Am Ende soll er sitzen: dafür gibt es `spot.sit()`.
 tipp: Die Ausgabe muss genau «Hallo, ich bin Spot» enthalten, mit Komma. Der Text steht bei print in Anführungszeichen.
 ---
 from spotlab import connect

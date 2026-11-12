@@ -9,7 +9,7 @@ Alles, was du in diesem Kurs geschrieben hast, ist echter spotlab-Code. Derselbe
 
 Am Schul-Laptop arbeitest du in der **spotlab-App** (Desktop-Verknüpfung «Spotlab»). Im Reiter «Code» wählst du über dem Editor, wo dein Programm läuft:
 
-- **Übungsraum 3D (Wiedergabe):** ein Simulator mit gerendertem Spot und Kamerabildern. Daraus stammen die Bilder in Kapitel 10. Das ist die Vorgabe.
+- **Übungsraum 3D (Wiedergabe):** ein Simulator mit gerendertem Spot und Kamerabildern. Daraus stammen die Bilder in Kapitel 10. Das ist die Vorgabe, wenn der 3D-Übungsraum auf dem Laptop installiert ist; sonst fehlen die beiden 3D-Einträge, und der 2D-Übungsraum ist die Vorgabe.
 - **Übungsraum (virtuell):** der 2D-Simulator, den du aus diesem Kurs kennst.
 - **Trockenlauf (nur Text):** nichts bewegt sich, spotlab prüft nur die Befehle (mehr dazu gleich).
 - **Physik 3D:** ein Versuch mit echter Physik, nur für ebene Räume.
@@ -42,7 +42,7 @@ A) Nichts, im Übungsraum hat es ja funktioniert.
 B)* Es zuerst im Trockenlauf prüfen und beim ersten echten Start die Hand am Not-Aus haben. Der Übungsraum ist eine Vereinfachung, der echte Spot rutscht, sieht anders und reagiert anders.
 C) Das Programm im 3D-Übungsraum testen, dann ist es sicher.
 D) Das Tempo im Programm verdoppeln, damit es schneller vorbei ist.
-! Der Simulator ist aus Messungen am echten Spot gebaut, aber er ist nicht der Roboter: Er kennt keine Physik, nichts kann umfallen oder rutschen, und die Kameras sind gerendert. Deshalb der Ablauf Übungsraum, Trockenlauf, Roboter, und am Roboter immer mit jemandem, der den Not-Aus drücken kann.
+! Der Simulator ist aus Messungen am echten Spot gebaut, aber er ist nicht der Roboter: Der 2D-Übungsraum kennt keine Physik, nichts kann umfallen oder rutschen, und die Kameras sind gerendert. Deshalb der Ablauf Übungsraum, Trockenlauf, Roboter, und am Roboter immer mit jemandem, der den Not-Aus drücken kann.
 ```
 
 # Lease und Not-Aus

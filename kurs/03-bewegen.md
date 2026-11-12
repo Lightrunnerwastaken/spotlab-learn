@@ -45,16 +45,16 @@ Wichtig: **«vorne» ist immer dort, wohin Spot gerade schaut.** Nach der Drehun
 
 ```quiz punkte=2
 ? Spot steht bei x = 1, y = 1 und schaut nach rechts (in Richtung grösserer x-Werte). Er bekommt diese Befehle. Wo steht er danach?
-| spot.move(forward=2)
-| spot.move(turn=90)
 | spot.move(forward=1)
 | spot.move(turn=90)
 | spot.move(forward=1)
-A) x = 4, y = 2
-B)* x = 2, y = 2
-C) x = 3, y = 0
-D) x = 2, y = 0
-! Zeichne es auf: Nach 2 m nach rechts steht Spot bei (3, 1). Die Linksdrehung lässt ihn nach oben schauen, 1 m bringt ihn zu (3, 2). Die zweite Linksdrehung lässt ihn nach links schauen, also Richtung kleinerer x-Werte: 1 m bringt ihn zu **(2, 2)**. Prüfe es nach, indem du die Befehle im Codefeld oben ausführst.
+| spot.move(turn=90)
+| spot.move(forward=1)
+A) x = 4, y = 1
+B)* x = 1, y = 2
+C) x = 3, y = 2
+D) x = 1, y = 0
+! Zeichne es auf: Nach 1 m nach rechts steht Spot bei (2, 1). Die Linksdrehung lässt ihn nach oben schauen, 1 m bringt ihn zu (2, 2). Die zweite Linksdrehung lässt ihn nach links schauen, also Richtung kleinerer x-Werte: 1 m bringt ihn zu **(1, 2)**. Wer A wählt, hat vergessen, dass «vorne» mit Spot mitdreht; wer D wählt, hat nach rechts gedreht. Prüfe es nach, indem du die Befehle im Codefeld oben ausführst.
 ```
 
 # Seitwärts gehen
@@ -128,7 +128,7 @@ Der direkte Weg führt durch den Tisch. Plane den Weg zuerst auf Papier!
 ziel: ende_bei 3.1 2.55 0.3
 ziel: blick 180 15
 ziel: nicht_angestossen
-tipp: Gehe zuerst unter dem Tisch durch nach rechts, bis du rechts vom Tisch bist. Der Tisch reicht von x = 2.5 bis x = 3.7.
+tipp: Gehe zuerst auf der Karte unterhalb des Tisches (bei kleinerem y) nach rechts, bis du rechts vom Tisch bist. Der Tisch reicht von x = 2.5 bis x = 3.7.
 tipp: Ein möglicher Weg: 3.2 m vor, links drehen, 1.55 m vor, nochmals links drehen, den Rest vor.
 ---
 from spotlab import connect

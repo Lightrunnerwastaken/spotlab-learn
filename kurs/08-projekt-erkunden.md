@@ -131,7 +131,7 @@ with connect() as spot:
         print(zeile)
 ```
 
-Diesmal kommt Spot aus der Ecke heraus, durch die Tür ins obere Zimmer und von dort weiter ins linke. Die Zahlenkarte in der Ausgabe ist **Spots eigene Karte**: Sie zeigt nicht, wie die Wohnung aussieht, sondern wo er gewesen ist. Vergleiche sie mit dem Grundriss.
+Diesmal kommt Spot vom Platz neben der Kiste los, durch die Tür ins obere Zimmer und von dort weiter ins linke. Die Zahlenkarte in der Ausgabe ist **Spots eigene Karte**: Sie zeigt nicht, wie die Wohnung aussieht, sondern wo er gewesen ist. Vergleiche sie mit dem Grundriss.
 
 Zwei Kleinigkeiten im Code:
 

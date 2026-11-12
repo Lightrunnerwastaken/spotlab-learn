@@ -24,7 +24,7 @@ with connect() as spot:
 Für jede Richtung bekommst du einen **Status**:
 
 - `clear` — frei, so weit Spot nachschaut (normal 1.8 m).
-- `blocked` — da ist etwas. `distance` sagt, in welcher Entfernung (in Metern ab Spots Mitte).
+- `blocked` — da ist etwas. `distance` sagt, wie weit der Weg frei ist (in Metern ab Spots Mitte). Achtung: `look` hält einen Sicherheitsabstand von 0.3 m ein. Steht eine Wand 1 m vor Spot, meldet `distance` darum etwa 0.7, nicht 1.0.
 - `unknown` — Spot weiss es nicht. Zum Beispiel, weil er dort nichts sieht.
 
 Was bedeutet das `start=0.6`? Das erklärt der nächste Abschnitt.
@@ -86,6 +86,7 @@ ziel: ende_bei 4.0 1.5 0.5
 ziel: nicht_angestossen
 ziel: ausgabe Wand erreicht
 ziel: aufgerufen move
+ziel: aufgerufen look
 tipp: Benutze eine `while`-Schleife mit `spot.look(max_distance=1.0, start=0.6)`, wie im Abschnitt vorher.
 tipp: Bleibt Spot zu früh stehen? Dann ist `max_distance` zu gross. Stösst er an? Dann sind die Schritte zu lang.
 ---
