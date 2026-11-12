@@ -4,6 +4,9 @@
 Repository: github.com/Lightrunnerwastaken/spotlab-learn (öffentlich).
 
 Fertig:
+- 12.11.2026: Durchsicht durch zwei Prüfer (als Schüler, alle Aufgaben selbst gelöst); bestätigte
+  Funde korrigiert (2b502f8, live). Offen daraus: Kap. 9 Aufgabe 2 prüft supports() nicht (spotlab
+  zeichnet es nicht auf); Python-Mittel wie getattr, f-String-Format, Listen-Schreibweise unerklärt.
 - Alle 14 Kapitel geschrieben (… Einem Menschen folgen, Treppen und Kanten, Am
   echten Spot).
 - Kapitel 13 (11.11. abends): Raum «treppe» von spotlab; `stairs()`, Nase bergauf
